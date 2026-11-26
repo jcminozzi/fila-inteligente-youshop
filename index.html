@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fila Inteligente · YouShop (protótipo)</title>
+<meta name="description" content="Protótipo de triagem de atendimento: separa urgência de dúvida simples, protege contra chargeback e oculta dados pessoais.">
+<style>
+:root{
+  --navy:#0B1F3A; --ink:#0F2942; --lime:#9BE000; --lime-ink:#4F7300; --blue:#4B74B8;
+  --bg:#F3F4F1; --panel:#FFFFFF; --soft:#F7F8F5; --line:#DFE2DB; --muted:#5E6B78;
+  --red:#B8321C; --red-bg:#FBECE8; --amber:#9A5B00; --amber-bg:#FCF1DE; --green:#3D7410; --green-bg:#EDF5E1;
+  --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--blue)}
+button{font:inherit;cursor:pointer}
+
+/* topo */
+.top{height:52px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.brand{display:flex;align-items:center;gap:10px;font-size:14px;color:#AFC0D3}
+.logo{font-weight:800;font-size:18px;letter-spacing:-.4px;color:#fff;display:flex;align-items:flex-end;gap:2px}
+.logo i{width:6px;height:6px;background:var(--lime);display:inline-block;margin-bottom:5px}
+.brand .sep{color:#3E5674}
+.tag{font-family:var(--mono);font-size:11px;color:var(--lime);border:1px solid #33506F;padding:1px 6px;border-radius:3px}
+.top nav{display:flex;gap:18px}
+.top nav a{color:#D5DFEA;text-decoration:none;font-size:13px}
+.top nav a:hover{color:#fff;text-decoration:underline}
+
+.intro{max-width:1320px;margin:0 auto;padding:18px 20px 14px;display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.intro h1{margin:0;font-size:20px;letter-spacing:-.3px}
+.intro p{margin:4px 0 0;color:var(--muted);max-width:720px}
+.intro .hint{font-size:12px;color:var(--muted);font-family:var(--mono)}
+
+/* layout principal */
+.app{max-width:1320px;margin:0 auto 28px;padding:0 20px;display:grid;grid-template-columns:380px 1fr;gap:14px;height:min(800px,calc(100vh - 150px));min-height:620px}
+.pane{background:var(--panel);border:1px solid var(--line);border-radius:8px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.pane-head{padding:11px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.pane-head b{font-size:13px}
+.pane-head small{display:block;color:var(--muted);font-size:12px}
+
+/* canal do cliente */
+.chat{flex:1;overflow:auto;padding:14px;background:var(--soft);display:flex;flex-direction:column;gap:10px}
+.msg{max-width:88%;padding:9px 11px;border-radius:10px;font-size:13.5px;white-space:pre-wrap;word-wrap:break-word}
+.msg .who{display:block;font-size:11px;color:var(--muted);margin-bottom:2px;white-space:normal}
+.msg.bot{background:#fff;border:1px solid var(--line);align-self:flex-start;border-top-left-radius:3px}
+.msg.agent{background:#fff;border:1px solid var(--line);border-left:3px solid var(--lime);align-self:flex-start;border-top-left-radius:3px}
+.msg.user{background:var(--ink);color:#fff;align-self:flex-end;border-top-right-radius:3px}
+.msg.user .who{color:#9FB2C8;text-align:right}
+.msg.typing{color:var(--muted);font-style:italic}
+.guide{display:block;margin-top:8px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;text-decoration:none;color:var(--ink);white-space:normal;background:var(--soft)}
+.guide strong{display:block;font-size:13px;color:var(--blue)}
+.guide span{font-size:12.5px;color:var(--muted)}
+.actions-inline{display:flex;gap:6px;margin-top:9px;white-space:normal;flex-wrap:wrap}
+.btn-s{border:1px solid var(--line);background:#fff;border-radius:5px;padding:5px 10px;font-size:12.5px;color:var(--ink)}
+.btn-s:hover{border-color:var(--ink)}
+.btn-s[disabled]{opacity:.45;cursor:default}
+
+.composer{border-top:1px solid var(--line);padding:10px 12px 12px}
+.cases-label{font-size:11.5px;color:var(--muted);margin-bottom:6px}
+.cases{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
+.case{border:1px solid var(--line);background:#fff;border-radius:4px;padding:4px 8px;font-size:12px;color:var(--ink);text-align:left}
+.case:hover{border-color:var(--ink);background:var(--soft)}
+.case code{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-right:5px}
+.case.lgpd code{color:var(--blue)}
+form.send{display:flex;gap:6px}
+form.send textarea{flex:1;resize:none;border:1px solid var(--line);border-radius:6px;padding:8px 10px;font:inherit;font-size:13.5px;color:var(--ink);background:#fff}
+form.send textarea:focus{outline:2px solid var(--lime);outline-offset:-1px;border-color:transparent}
+form.send button{border:0;background:var(--ink);color:#fff;border-radius:6px;padding:0 14px;font-weight:600}
+form.send button:hover{background:#18395C}
+
+/* console */
+.kpis{display:flex;gap:0;font-size:12px;color:var(--muted)}
+.kpi{padding:0 14px;border-left:1px solid var(--line);display:flex;align-items:baseline;gap:6px}
+.kpi:first-child{border-left:0;padding-left:0}
+.kpi b{font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums}
+.kpi.red b{color:var(--red)}
+.kpi.green b{color:var(--lime-ink)}
+.ops-body{flex:1;display:grid;grid-template-columns:270px 1fr;min-height:0}
+.queue{border-right:1px solid var(--line);overflow:auto;background:var(--soft)}
+.queue-head{padding:9px 12px;font-size:11.5px;color:var(--muted);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;position:sticky;top:0;background:var(--soft)}
+.queue ol{list-style:none;margin:0;padding:0}
+.q{padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer;display:grid;grid-template-columns:auto 1fr;gap:2px 8px}
+.q:hover{background:#fff}
+.q.sel{background:#fff;box-shadow:inset 3px 0 0 var(--ink)}
+.q .p{grid-row:span 2;font-family:var(--mono);font-size:10.5px;font-weight:700;padding:1px 5px;border-radius:3px;height:fit-content;margin-top:2px}
+.q .t{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.q .s{font-size:11.5px;color:var(--muted)}
+.q.done .t{color:var(--muted)}
+.p1{background:var(--red-bg);color:var(--red)}
+.p2{background:var(--amber-bg);color:var(--amber)}
+.p3{background:var(--green-bg);color:var(--green)}
+.empty-q{padding:16px 12px;color:var(--muted);font-size:12.5px}
+
+.detail{overflow:auto;padding:18px 22px 26px}
+.empty{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;max-width:440px;margin:0 auto;color:var(--muted)}
+.empty h3{color:var(--ink);margin:0 0 6px;font-size:16px}
+.empty ol{padding-left:18px;margin:8px 0 0}
+.empty li{margin:3px 0}
+.d-meta{font-family:var(--mono);font-size:11.5px;color:var(--muted);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.badge{font-family:var(--mono);font-size:11px;font-weight:700;padding:2px 7px;border-radius:3px}
+.d-title{font-size:18px;margin:6px 0 14px;letter-spacing:-.2px;line-height:1.3}
+.alert{border-left:3px solid var(--red);background:var(--red-bg);padding:9px 12px;border-radius:0 6px 6px 0;margin-bottom:16px;font-size:13px}
+.alert b{color:var(--red)}
+.alert.info{border-color:var(--blue);background:#EDF2FA}
+.alert.info b{color:var(--blue)}
+dl.facts{display:grid;grid-template-columns:120px 1fr;gap:6px 14px;margin:0 0 18px;font-size:13px}
+dl.facts dt{color:var(--muted)}
+dl.facts dd{margin:0}
+h4{font-size:11.5px;font-weight:600;color:var(--muted);margin:18px 0 6px;text-transform:uppercase;letter-spacing:.5px}
+.quote{border:1px solid var(--line);border-radius:6px;padding:10px 12px;background:var(--soft);font-size:13.5px;white-space:pre-wrap}
+mark{background:none;color:inherit;border-radius:3px;padding:0 2px}
+mark.cb{background:#F7D4CC;color:#7F1D0E;font-weight:600}
+mark.kw{background:#E6F2C9;color:#33500A}
+mark.mask{background:#DCE6F5;color:#24467E;font-family:var(--mono);font-size:12px}
+.lgpd{font-size:12px;color:var(--muted);margin-top:6px}
+.lgpd b{color:var(--ink);font-weight:600}
+ul.guides{list-style:none;margin:0;padding:0;font-size:13px}
+ul.guides li{padding:5px 0;border-bottom:1px dashed var(--line)}
+ul.guides code{font-family:var(--mono);font-size:11px;color:var(--muted);margin-right:6px}
+textarea.draft{width:100%;min-height:210px;border:1px solid var(--line);border-radius:6px;padding:10px 12px;font:inherit;font-size:13px;line-height:1.5;color:var(--ink);resize:vertical}
+textarea.draft:focus{outline:2px solid var(--lime);outline-offset:-1px}
+textarea.draft[readonly]{background:var(--soft);color:var(--muted)}
+.draft-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}
+.draft-foot small{color:var(--muted);font-size:12px;max-width:420px}
+.btn{border:1px solid var(--ink);background:#fff;color:var(--ink);border-radius:6px;padding:7px 14px;font-weight:600;font-size:13px}
+.btn.primary{background:var(--ink);color:#fff}
+.btn.primary:hover{background:#18395C}
+.btn.ghost{border-color:var(--line);font-weight:500}
+.btn.ghost:hover{border-color:var(--ink)}
+.status{font-size:12.5px;padding:8px 10px;border-radius:6px;background:var(--soft);border:1px solid var(--line);color:var(--muted)}
+
+/* como funciona */
+.how{max-width:1320px;margin:0 auto;padding:0 20px 10px}
+.how-inner{border-top:1px solid var(--line);padding-top:22px;display:grid;grid-template-columns:minmax(0,640px) minmax(0,1fr);gap:40px}
+.how h2{font-size:16px;margin:0 0 10px}
+.how ol{margin:0;padding-left:20px}
+.how li{margin:0 0 8px;color:#2C3E52}
+.how p{color:#2C3E52;margin:0 0 10px}
+.how .note{font-size:13px;color:var(--muted)}
+footer{max-width:1320px;margin:0 auto;padding:18px 20px 34px;color:var(--muted);font-size:12px}
+
+@media (max-width:980px){
+  .app{grid-template-columns:1fr;height:auto}
+  .pane.user{height:600px}
+  .pane.ops{min-height:700px}
+  .ops-body{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .queue{max-height:210px;border-right:0;border-bottom:1px solid var(--line)}
+  .how-inner{grid-template-columns:1fr;gap:10px}
+  .kpis{flex-wrap:wrap;row-gap:4px}
+}
+@media (max-width:560px){
+  .top nav a:first-child{display:none}
+  .brand .tag{display:none}
+  dl.facts{grid-template-columns:1fr;gap:0}
+  dl.facts dd{margin-bottom:8px}
+  .kpi{padding:0 8px}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <span class="logo">youshop<i></i></span>
+    <span class="sep">/</span>
+    <span>fila inteligente</span>
+    <span class="tag">protótipo</span>
+  </div>
+  <nav>
+    <a href="#como">Como funciona</a>
+    <a href="https://github.com/jcminozzi/fila-inteligente-youshop" target="_blank" rel="noopener">Código no GitHub</a>
+  </nav>
+</header>
+
+<div class="intro">
+  <div>
+    <h1>Triagem antes da fila do WhatsApp</h1>
+    <p>À esquerda, o que o cliente vê ao pedir ajuda no app. À direita, o que chega para o time de Operações: prioridade, time certo, dados pessoais ocultos e um rascunho de resposta para revisar.</p>
+  </div>
+  <span class="hint">clique em um caso real para começar</span>
+</div>
+
+<main class="app">
+  <!-- Canal do cliente -->
+  <section class="pane user" aria-label="Canal do cliente">
+    <div class="pane-head">
+      <div><b>Canal do cliente</b><small>ajuda dentro do app</small></div>
+    </div>
+    <div class="chat" id="chat" aria-live="polite"></div>
+    <div class="composer">
+      <div class="cases-label">Casos reais do Reclame Aqui (nov/2026, sem nomes)</div>
+      <div class="cases" id="cases"></div>
+      <form class="send" id="send">
+        <textarea id="msg" rows="2" placeholder="Ou escreva sua própria mensagem…"></textarea>
+        <button type="submit">Enviar</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Console interno -->
+  <section class="pane ops" aria-label="Console de Operações">
+    <div class="pane-head">
+      <div><b>Console de Operações</b><small>visão interna do time</small></div>
+      <div class="kpis" id="kpis"></div>
+    </div>
+    <div class="ops-body">
+      <aside class="queue">
+        <div class="queue-head"><span>Fila</span><span id="qinfo">0 tickets</span></div>
+        <ol id="queue"></ol>
+      </aside>
+      <div class="detail" id="detail"></div>
+    </div>
+  </section>
+</main>
+
+<section class="how" id="como">
+  <div class="how-inner">
+    <div>
+      <h2>Como a triagem decide</h2>
+      <ol>
+        <li><b>Dados pessoais saem primeiro.</b> CPF, e-mail, telefone e nome viram marcadores antes de qualquer análise. O console nunca mostra o dado original.</li>
+        <li><b>Risco de chargeback vai para o topo.</b> Se a mensagem fala em contestar no banco, estorno no cartão, golpe ou fraude, o ticket vira P1 e nada é respondido automaticamente.</li>
+        <li><b>Cada caso cai no time certo.</b> Saque e vitrine vão para Operações e Comercial; afiliação parada vai para Onboarding; pedido e reembolso vão para o Atendimento ao Comprador. O rascunho usa só o texto dos guias oficiais.</li>
+        <li><b>Dúvida simples recebe o guia na hora.</b> Se o cliente responder que não resolveu, o caso entra na fila humana com o resumo pronto, sem precisar explicar de novo.</li>
+      </ol>
+    </div>
+    <div>
+      <h2>O que fica de fora, de propósito</h2>
+      <p>A triagem não libera saque, não aprova cadastro e não envia resposta em caso sensível sem um analista aprovar. Ela organiza a fila e adianta o trabalho; quem decide é o time.</p>
+      <p class="note">Nesta versão a classificação é feita por regras e palavras-chave, rodando inteira no navegador. O script <code>triador_youshop.py</code> no repositório faz a mesma triagem em lote e, se configurado, usa o Gemini só para reescrever o rascunho a partir do texto já anonimizado.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Protótipo de João Carlos Minozzi para o Desafio de Inovação, Programa de Estágio YouShop 2027 (Operações · Automação e IA).
+  Projeto independente, sem vínculo oficial com a YouShop. Links apontam para a Central de Ajuda pública (ajuda.youshop.co) e a Área de Compras.
+</footer>
+
+<script>
+/* ---------------- Base de conhecimento (Central de Ajuda pública) ---------------- */
+const KB = [
+  { id:'KB-01', titulo:'Como criar meu link 2YOU', url:'https://ajuda.youshop.co/',
+    kw:['link','2you','divulgação','personalizado','afiliado','creator','comecei agora'],
+    resumo:"No app YouShop Creators, em 'Meu link na Bio' ou na aba 'Afiliações', escolha o produto aprovado e gere seu link exclusivo e rastreável (2YOU)." },
+  { id:'KB-02', titulo:'Como cadastrar minha rede social', url:'https://ajuda.youshop.co/',
+    kw:['rede social','redes sociais','instagram','tiktok','perfil','vitrine','aceitam'],
+    resumo:'Em Perfil > Redes Sociais, adicione seus canais ativos. As marcas olham essas redes antes de aprovar pedidos na Vitrine.' },
+  { id:'KB-03', titulo:'Como validar sua conta (KYC e saque)', url:'https://ajuda.youshop.co/',
+    kw:['saque','sacar','validação','validar','cpf','documento','rg','carteira','bloqueado','comissão'],
+    resumo:'Dá para se afiliar e vender normalmente, mas o saque das comissões na Carteira só é liberado depois da validação de identidade (documento oficial e CPF) no Perfil.' },
+  { id:'KB-04', titulo:'Como solicitar e acompanhar uma afiliação', url:'https://ajuda.youshop.co/',
+    kw:['afiliação','afiliei','retorno','em análise','aprovação','marca','vitrine'],
+    resumo:"Em 'Minhas Afiliações' aparecem os status Aprovadas, Em análise e Reprovadas. Marcas com aprovação manual avaliam o perfil antes de liberar o link." },
+  { id:'KB-05', titulo:'Reembolso de produto e acompanhamento do pedido', url:'https://customer.youshop.com.br/login',
+    kw:['reembolso','cancelado','cancelar','estorno','prazo','comprovante','suplemento'],
+    resumo:'Status da compra e comprovante de estorno ficam na Área de Compras, com o e-mail usado no pedido. Depois de aprovado, o prazo do crédito depende da operadora do cartão ou meio de pagamento.' },
+  { id:'KB-06', titulo:'Pedido, e-mail de confirmação e papel da YouShop', url:'https://customer.youshop.com.br/login',
+    kw:['e-mail','confirmação','pedido','rastrear','rastreio','entrega','vendedor','compra'],
+    resumo:'A YouShop processa o pagamento; o envio e o rastreio ficam com o vendedor do produto. Mesmo sem o e-mail de confirmação, a compra aparece na Área de Compras.' }
+];
+
+/* ---------------- Casos de teste ---------------- */
+const CASES = [
+  { ref:'RA-01', label:'Prazo de reembolso',
+    titulo:'Prazo e funcionamento do reembolso de um suplemento cancelado',
+    msg:'Boa tarde, tudo bem? Minha tia realizou uma compra, mas precisou cancelar e solicitar o reembolso referente a compra de um suplemento. Qual é o prazo para a solicitação ser concluída? E como funciona o processo de reembolso?' },
+  { ref:'RA-02', label:'Afiliação sem retorno',
+    titulo:'Sem retorno sobre a afiliação feita no dia 30',
+    msg:'Oi, tudo bem? Me afiliei a uma marca no dia 30 e ainda não tive retorno sobre. Quero saber se aconteceu alguma coisa e como podemos resolver isso. Aguardo retorno com urgência e preferencialmente pelo WhatsApp.' },
+  { ref:'RA-03', label:'Saque e vitrine',
+    titulo:'Não consigo sacar e não me aceitam na vitrine',
+    msg:'Boa noite, infelizmente não estou conseguindo realizar o saque e também vi que não estão me aceitando na vitrine de afiliados. Gostaria de uma resolução desse problema.' },
+  { ref:'RA-04', label:'Ajuda com link 2YOU',
+    titulo:'Ajuda com o link',
+    msg:'Olá! Tudo bem? Comecei agora nesse mundo de creator e preciso de ajuda com o link da 2YOU. Entre em contato para tirar algumas dúvidas, como adicionar redes sociais, links personalizados, etc. Não tive retorno até o momento.' },
+  { ref:'RA-05', label:'Sem e-mail, ameaça contestar',
+    titulo:'Não recebi e-mail de confirmação do pedido',
+    msg:'Boa tarde! Fiz a compra com vocês, mas não recebi o e-mail de confirmação. O que houve? Quero saber como acompanhar meu pedido e rastrear, pois é a primeira vez que compro assim e estou muito insegura. Tentei contato no whatsapp, mas não tive retorno até o momento. Se eu não tiver retorno o mais breve possível vou contestar direto com o banco.' },
+  { ref:'LGPD', label:'Mensagem com CPF e telefone', lgpd:true,
+    titulo:'Cobrança que não reconheço',
+    msg:'Oi, meu nome é Carla Mendes, CPF 123.456.789-09, e-mail carla.mendes@gmail.com. Comprei um curso ontem e apareceu uma segunda cobrança no cartão que eu não reconheço. Me liga no (11) 98765-4321.' }
+];
+
+/* ---------------- Regras ---------------- */
+const CHARGEBACK = ['contestar','contestação','contestei','com o banco','no banco','estorno no cartão','chargeback','procon','golpe','fraude','não reconheço','disputa'];
+
+const RULES = [
+  { when:['saque','sacar','vitrine','comissão'], kb:['KB-03','KB-02'], persona:'Creator com bloqueio', fila:'Operações (KYC) + Comercial', team:'os times de Operações e Comercial', prio:2,
+    acao:'Revisão humana com checklist de KYC e vitrine',
+    motivo:'Saque depende da validação de identidade (KYC); entrada na vitrine depende da análise comercial.',
+    contexto:'Sobre o saque e a vitrine: são duas análises separadas. O saque é liberado depois da validação de identidade (KYC), e a entrada na vitrine depende da aprovação das marcas. Já encaminhamos para os dois times.' },
+  { when:['afiliação','afiliei','dia 30','sem retorno'], kb:['KB-04'], persona:'Creator aguardando aprovação', fila:'Operações · Onboarding', team:'o time de Onboarding', prio:2,
+    acao:'Checar log do cadastro e cobrar posição da marca',
+    motivo:'Solicitação parada além do prazo normal. Pode ser falha de sincronização ou pendência da marca.',
+    contexto:'Já pedimos ao time responsável uma posição sobre a sua solicitação de afiliação. Enquanto isso, o status atualizado aparece no app:' },
+  { when:['2you','comecei agora','link','rede social','redes sociais'], kb:['KB-01','KB-02'], persona:'Creator iniciante', fila:'Autoatendimento', team:null, prio:3,
+    acao:'Enviar guia oficial ao cliente',
+    motivo:'Dúvida básica, já documentada nos guias de Creators.',
+    contexto:'Separei os passos da Central de Ajuda que respondem a sua dúvida:' },
+  { when:['compra','comprei','pedido','reembolso','estorno','entrega','rastre','cancel','cobrança','cartão','boleto','pix'], kb:['KB-05','KB-06'], persona:'Comprador', fila:'Atendimento ao Comprador', team:'o Atendimento ao Comprador', prio:2,
+    acao:'Orientar Área de Compras e contato do vendedor',
+    motivo:'Dúvida de pedido, envio ou reembolso.',
+    contexto:'A YouShop processa o pagamento, e o envio fica com o vendedor do produto. Compra, reembolso e comprovante aparecem na Área de Compras, com o e-mail usado no pedido:' }
+];
+
+/* ---------------- Utilidades ---------------- */
+const $ = s => document.querySelector(s);
+const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// minúsculas e sem acento, preservando o tamanho (para alinhar os destaques)
+const norm = s => Array.from(s.toLowerCase()).map(c => c.normalize('NFD').charAt(0)).join('');
+const hhmm = () => new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+const MASK_RE = /\[(CPF|E-MAIL|TELEFONE|NOME)\]/g;
+
+function findAll(normText, terms){
+  const out = [];
+  for (const t of terms){
+    const re = new RegExp('(?<![a-z0-9])' + escRe(norm(t)) + '[a-z0-9]*', 'g');
+    let m; while ((m = re.exec(normText))) out.push({s:m.index, e:m.index + m[0].length, term:t});
+  }
+  return out;
+}
+const hits = (normText, terms) => [...new Set(findAll(normText, terms).map(h => h.term))];
+
+/* ---------------- LGPD ---------------- */
+function sanitize(text){
+  const masks = [];
+  const steps = [
+    [/\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/g, '[CPF]', 'CPF'],
+    [/[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9.-]+/g, '[E-MAIL]', 'e-mail'],
+    [/(?:\+55\s?)?(?:\(?\d{2}\)?\s?)?(?:9\d{4}|\d{4})-?\d{4}\b/g, '[TELEFONE]', 'telefone'],
+    [/((?:[Mm]eu nome é|[Mm]e chamo|[Aa]qui é (?:a|o))\s+)[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+(?:\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+)?/g, '$1[NOME]', 'nome']
+  ];
+  for (const [re, rep, label] of steps){
+    const n = (text.match(re) || []).length;
+    if (n){ text = text.replace(re, rep); masks.push({label, n}); }
+  }
+  return {clean:text, masks};
+}
+
+/* ---------------- Triagem ---------------- */
+let seq = 1041;
+const tickets = [];
+let selected = null;
+
+function classify(c){
+  const {clean, masks} = sanitize(c.msg);
+  const full = (c.titulo ? c.titulo + '. ' : '') + clean;
+  const blanked = norm(full.replace(MASK_RE, m => ' '.repeat(m.length)));
+
+  const cb = hits(blanked, CHARGEBACK);
+  const rule = RULES.find(r => hits(blanked, r.when).length) || null;
+  // pontuação: palavras-chave encontradas + bônus para os guias do time de destino
+  const guides = KB.map(a => { const h = hits(blanked, a.kw); return {a, h, score: h.length + (rule && rule.kb.includes(a.id) ? 2 : 0)}; })
+                   .filter(x => x.score > 0)
+                   .sort((x, y) => y.score - x.score)
+                   .slice(0, 2);
+
+  const t = {
+    n: ++seq, ref: c.ref || 'livre', titulo: c.titulo || c.msg.slice(0, 64) + (c.msg.length > 64 ? '…' : ''),
+    raw: c.msg, clean, masks, cb, rule, time: hhmm(),
+    guides: guides.map(x => x.a),
+    terms: [...new Set([...guides.flatMap(x => x.h), ...(rule ? hits(blanked, rule.when) : [])])],
+    persona: rule ? rule.persona : 'Não identificado',
+    fila: rule ? rule.fila : 'Atendimento geral',
+    prio: rule ? rule.prio : 2,
+    acao: rule ? rule.acao : 'Leitura humana',
+    motivo: rule ? rule.motivo : 'Assunto fora da base de conhecimento. Nenhuma resposta automática.',
+    status: 'fila'
+  };
+
+  if (cb.length){
+    t.prio = 1;
+    t.fila = 'Prioridade anti-chargeback → ' + t.fila;
+    t.acao = 'Atendimento humano imediato';
+    t.motivo = 'Cliente mencionou ' + cb.map(x => '“' + x + '”').join(', ') + '. Um atendente precisa assumir antes que vire contestação no banco.';
+  } else if (t.prio === 3 && t.guides.length){
+    t.status = 'auto';
+  } else if (t.prio === 3){
+    t.prio = 2; t.fila = 'Atendimento geral'; t.acao = 'Leitura humana';
+  }
+  t.draft = makeDraft(t);
+  return t;
+}
+
+function makeDraft(t){
+  const L = ['Olá! Aqui é da equipe de atendimento da YouShop.'];
+  if (t.cb.length) L.push('Entendemos a sua preocupação, e o seu caso já está com prioridade aqui no time. Vamos resolver por este canal.');
+  if (t.escalated) L.push('Vimos que o guia enviado antes não resolveu, então uma pessoa do time assumiu a sua conversa.');
+  if (t.rule && !(t.escalated && t.rule.prio === 3)) L.push(t.rule.contexto);
+  else if (!t.rule) L.push('Recebemos sua mensagem e uma pessoa do time vai analisar o seu caso com atenção.');
+  if (t.guides.length) L.push(t.guides.map(g => '• ' + g.titulo + '\n  ' + g.resumo + '\n  ' + g.url).join('\n\n'));
+  L.push('Se quiser complementar, é só responder aqui. Por segurança, não envie fotos de documentos ou dados bancários fora do app oficial.');
+  return L.join('\n\n');
+}
+
+/* ---------------- Chat ---------------- */
+const chat = $('#chat');
+function bubble(kind, who, html){
+  const d = document.createElement('div');
+  d.className = 'msg ' + kind;
+  d.innerHTML = '<span class="who">' + esc(who) + ' · ' + hhmm() + '</span>' + html;
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
+  return d;
+}
+const guideLinks = gs => gs.map(g => '<a class="guide" href="' + g.url + '" target="_blank" rel="noopener"><strong>' + esc(g.titulo) + '</strong><span>' + esc(g.resumo) + '</span></a>').join('');
+const linkify = s => esc(s).replace(/https?:\/\/[^\s]+/g, u => '<a href="' + u + '" target="_blank" rel="noopener">' + u + '</a>');
+
+function botAnswer(t){
+  const typing = bubble('bot typing', 'Assistente de ajuda', 'digitando…');
+  setTimeout(() => {
+    typing.remove();
+    if (t.status === 'auto'){
+      const d = bubble('bot', 'Assistente de ajuda', 'Isso está explicado na Central de Ajuda:' + guideLinks(t.guides) +
+        '<div class="actions-inline"><button class="btn-s" data-ok>Resolveu</button><button class="btn-s" data-no>Não resolveu, quero falar com alguém</button></div>');
+      d.querySelector('[data-ok]').onclick = e => { lock(d); resolveAuto(t); };
+      d.querySelector('[data-no]').onclick = e => { lock(d); escalate(t); };
+    } else if (t.cb.length){
+      bubble('bot', 'Assistente de ajuda', 'Sua mensagem foi marcada como prioritária e já está com uma pessoa do nosso time. A resposta chega por aqui mesmo.' +
+        (t.guides.length ? '\n\nEnquanto isso, se ajudar:' + guideLinks(t.guides.slice(0, 1)) : ''));
+    } else if (t.rule){
+      bubble('bot', 'Assistente de ajuda', 'Encaminhei para ' + esc(t.rule.team) + '. Uma pessoa do time continua a conversa por aqui.' +
+        (t.guides.length ? '\n\nEnquanto isso, talvez ajude:' + guideLinks(t.guides) : ''));
+    } else {
+      bubble('bot', 'Assistente de ajuda', 'Não achei esse assunto na Central de Ajuda, então passei sua mensagem para uma pessoa do time.');
+    }
+  }, 650);
+}
+function lock(d){ d.querySelectorAll('button').forEach(b => b.disabled = true); }
+
+function resolveAuto(t){
+  bubble('user', 'Você', 'Resolveu, obrigado!');
+  t.status = 'resolvido';
+  setTimeout(() => bubble('bot', 'Assistente de ajuda', 'Que bom! Se precisar, é só chamar.'), 400);
+  render();
+}
+function escalate(t){
+  bubble('user', 'Você', 'Não resolveu, quero falar com alguém.');
+  t.escalated = true; t.status = 'fila'; t.prio = 2;
+  t.fila = 'Atendimento humano (cliente pediu)';
+  t.acao = 'Assumir a conversa';
+  t.motivo = 'Guia enviado automaticamente, mas o cliente respondeu que não resolveu.';
+  t.draft = makeDraft(t);
+  setTimeout(() => bubble('bot', 'Assistente de ajuda', 'Certo. Passei para uma pessoa do time com o resumo da sua dúvida, você não vai precisar explicar de novo.'), 400);
+  selected = t.n; render();
+}
+
+function submit(c){
+  bubble('user', 'Você', esc(c.msg));
+  const t = classify(c);
+  tickets.push(t);
+  selected = t.n;
+  render();
+  botAnswer(t);
+}
+
+/* ---------------- Console ---------------- */
+const STATUS = { fila:'Aguardando analista', auto:'Guia enviado, aguardando cliente', resolvido:'Resolvido no autoatendimento', respondido:'Respondido pelo analista', descartado:'Rascunho descartado' };
+const isOpen = t => t.status === 'fila' || t.status === 'auto';
+
+function renderKpis(){
+  const k = [
+    ['', tickets.length, 'analisados'],
+    ['red', tickets.filter(t => t.cb.length).length, 'alerta P1'],
+    ['green', tickets.filter(t => t.status === 'resolvido').length, 'resolvidos sem fila'],
+    ['', tickets.filter(t => t.status === 'fila').length, 'na fila humana']
+  ];
+  $('#kpis').innerHTML = k.map(([c, v, l]) => '<div class="kpi ' + c + '"><b>' + v + '</b><span>' + l + '</span></div>').join('');
+}
+
+function renderQueue(){
+  const list = [...tickets].sort((a, b) => (isOpen(b) - isOpen(a)) || (a.prio - b.prio) || (b.n - a.n));
+  $('#qinfo').textContent = tickets.length + (tickets.length === 1 ? ' ticket' : ' tickets');
+  $('#queue').innerHTML = list.length ? list.map(t =>
+    '<li class="q' + (t.n === selected ? ' sel' : '') + (isOpen(t) ? '' : ' done') + '" data-n="' + t.n + '">' +
+      '<span class="p p' + t.prio + '">P' + t.prio + '</span>' +
+      '<span class="t">' + esc(t.titulo) + '</span>' +
+      '<span class="s">#' + t.n + ' · ' + esc(STATUS[t.status]) + '</span></li>').join('')
+    : '<li class="empty-q">Vazia por enquanto.</li>';
+  document.querySelectorAll('.q').forEach(li => li.onclick = () => { selected = +li.dataset.n; render(); });
+}
+
+function highlight(t){
+  const text = t.clean, n = norm(text), ranges = [];
+  let m; MASK_RE.lastIndex = 0;
+  while ((m = MASK_RE.exec(text))) ranges.push({s:m.index, e:m.index + m[0].length, k:'mask', o:0});
+  findAll(n, t.cb).forEach(r => ranges.push({...r, k:'cb', o:1}));
+  findAll(n, t.terms).forEach(r => ranges.push({...r, k:'kw', o:2}));
+  ranges.sort((a, b) => a.s - b.s || a.o - b.o || b.e - a.e);
+  let out = '', pos = 0;
+  for (const r of ranges){
+    if (r.s < pos) continue;
+    out += esc(text.slice(pos, r.s)) + '<mark class="' + r.k + '">' + esc(text.slice(r.s, r.e)) + '</mark>';
+    pos = r.e;
+  }
+  return out + esc(text.slice(pos));
+}
+
+function renderDetail(){
+  const box = $('#detail');
+  const t = tickets.find(x => x.n === selected);
+  if (!t){
+    box.innerHTML = '<div class="empty"><h3>Nenhum ticket ainda</h3>Mande uma mensagem pelo canal do cliente. Sugestão de roteiro:' +
+      '<ol><li><b>RA-04</b>: dúvida simples, resolvida com o guia.</li><li><b>RA-03</b>: vai para Operações e Comercial.</li>' +
+      '<li><b>RA-05</b>: fala em contestar no banco, vira P1.</li><li><b>LGPD</b>: veja o CPF e o telefone sumirem aqui.</li></ol></div>';
+    return;
+  }
+  const lgpd = t.masks.length
+    ? 'LGPD: <b>' + t.masks.map(x => x.label + (x.n > 1 ? ' (' + x.n + 'x)' : '')).join(', ') + '</b> ocultado' + (t.masks.length > 1 ? 's' : '') + ' antes da análise.'
+    : 'LGPD: nenhum dado pessoal encontrado na mensagem.';
+
+  let alert = '';
+  if (t.cb.length) alert = '<div class="alert"><b>Risco de chargeback.</b> Ticket no topo da fila. O cliente recebeu só um aviso de que o caso é prioritário; a resposta depende de um analista.</div>';
+  else if (t.status === 'auto') alert = '<div class="alert info"><b>Resolvido pelo guia?</b> O cliente recebeu os links oficiais e pode responder “Resolveu” ou “Não resolveu”. Esse ticket não ocupa a fila humana.</div>';
+  else if (t.escalated) alert = '<div class="alert info"><b>Escalado pelo cliente.</b> O guia não resolveu; o resumo abaixo evita que ele precise repetir a história.</div>';
+
+  let action;
+  if (t.status === 'fila'){
+    action = '<h4>Rascunho para o analista</h4><textarea class="draft" id="draft">' + esc(t.draft) + '</textarea>' +
+      '<div class="draft-foot"><small>Montado só com o texto dos guias oficiais. Edite à vontade; nada vai para o cliente sem aprovação.</small>' +
+      '<div style="display:flex;gap:6px"><button class="btn ghost" id="discard">Descartar</button><button class="btn primary" id="approve">Aprovar e enviar</button></div></div>';
+  } else if (t.status === 'auto' || t.status === 'resolvido'){
+    action = '<h4>Enviado automaticamente</h4><div class="status">Links para: ' + t.guides.map(g => esc(g.titulo)).join(' · ') + '</div>';
+  } else {
+    action = '<h4>Resposta</h4><textarea class="draft" readonly>' + esc(t.status === 'respondido' ? t.draft : 'Rascunho descartado. O analista vai responder manualmente.') + '</textarea>';
+  }
+
+  box.innerHTML =
+    '<div class="d-meta"><span class="badge p' + t.prio + '">P' + t.prio + '</span><span>#' + t.n + '</span><span>' + esc(t.ref) + '</span><span>' + t.time + '</span><span>' + esc(STATUS[t.status]) + '</span></div>' +
+    '<div class="d-title">' + esc(t.titulo) + '</div>' + alert +
+    '<dl class="facts"><dt>Perfil</dt><dd>' + esc(t.persona) + '</dd><dt>Vai para</dt><dd>' + esc(t.fila) + '</dd>' +
+    '<dt>Próxima ação</dt><dd>' + esc(t.acao) + '</dd><dt>Por quê</dt><dd>' + esc(t.motivo) + '</dd></dl>' +
+    '<h4>Mensagem recebida</h4><div class="quote">' + highlight(t) + '</div><div class="lgpd">' + lgpd + '</div>' +
+    '<h4>Guias usados</h4>' + (t.guides.length
+      ? '<ul class="guides">' + t.guides.map(g => '<li><code>' + g.id + '</code><a href="' + g.url + '" target="_blank" rel="noopener">' + esc(g.titulo) + '</a></li>').join('') + '</ul>'
+      : '<div class="status">Nenhum guia da base cobre esse assunto.</div>') +
+    action;
+
+  const ap = $('#approve'), di = $('#discard');
+  if (ap) ap.onclick = () => {
+    t.draft = $('#draft').value; t.status = 'respondido';
+    bubble('agent', 'Atendente · YouShop', linkify(t.draft));
+    render();
+  };
+  if (di) di.onclick = () => { t.status = 'descartado'; render(); };
+}
+
+function render(){ renderKpis(); renderQueue(); renderDetail(); }
+
+/* ---------------- Início ---------------- */
+$('#cases').innerHTML = CASES.map((c, i) => '<button class="case' + (c.lgpd ? ' lgpd' : '') + '" data-i="' + i + '" title="' + esc(c.titulo) + '"><code>' + c.ref + '</code>' + esc(c.label) + '</button>').join('');
+document.querySelectorAll('.case').forEach(b => b.onclick = () => submit(CASES[+b.dataset.i]));
+$('#send').onsubmit = e => {
+  e.preventDefault();
+  const v = $('#msg').value.trim();
+  if (!v) return;
+  $('#msg').value = '';
+  submit({msg:v});
+};
+$('#msg').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $('#send').requestSubmit(); } });
+
+bubble('bot', 'Assistente de ajuda', 'Oi! Me conta o que aconteceu. Se a resposta já estiver na Central de Ajuda, mando o link na hora; se não, passo para uma pessoa do time.');
+render();
+</script>
+</body>
+</html>
