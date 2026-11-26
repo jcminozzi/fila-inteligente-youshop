@@ -331,7 +331,7 @@ function sanitize(text){
   const masks = [];
   const steps = [
     [/\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/g, '[CPF]', 'CPF'],
-    [/[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9.-]+/g, '[E-MAIL]', 'e-mail'],
+    [/[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+/g, '[E-MAIL]', 'e-mail'],
     [/(?:\+55\s?)?(?:\(?\d{2}\)?\s?)?(?:9\d{4}|\d{4})-?\d{4}\b/g, '[TELEFONE]', 'telefone'],
     [/((?:[Mm]eu nome é|[Mm]e chamo|[Aa]qui é (?:a|o))\s+)[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+(?:\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+)?/g, '$1[NOME]', 'nome']
   ];
@@ -503,6 +503,7 @@ function highlight(t){
 
 function renderDetail(){
   const box = $('#detail');
+  box.scrollTop = 0;
   const t = tickets.find(x => x.n === selected);
   if (!t){
     box.innerHTML = '<div class="empty"><h3>Nenhum ticket ainda</h3>Mande uma mensagem pelo canal do cliente. Sugestão de roteiro:' +
