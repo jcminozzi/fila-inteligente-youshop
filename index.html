@@ -4,26 +4,29 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fila Inteligente · YouShop</title>
-<meta name="description" content="Protótipo interativo de triagem operacional e escudo anti-chargeback para o atendimento da YouShop.">
+<meta name="description" content="Protótipo interativo de triagem operacional com IA, escudo anti-chargeback e proteção LGPD para a YouShop.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
+  --navy-0:#071529;
   --navy:#0B1F3A;
-  --navy-2:#122D52;
+  --navy-2:#133158;
   --ink:#0F172A;
   --ink-2:#334155;
   --muted:#64748B;
   --muted-2:#94A3B8;
   --lime:#9BE000;
-  --lime-soft:#F1FAD9;
-  --lime-ink:#3F6212;
+  --lime-hover:#8CCB00;
+  --lime-soft:#F2FCE2;
+  --lime-line:#D3F293;
+  --lime-ink:#365314;
   --blue:#3B66B0;
   --blue-soft:#EFF6FF;
   --blue-line:#BFDBFE;
 
-  --canvas:#F5F7FA;
+  --canvas:#F3F6FA;
   --surface:#FFFFFF;
   --surface-2:#F8FAFC;
   --line:#E2E8F0;
@@ -44,14 +47,14 @@
   --green-soft:#F0FDF4;
   --green-line:#BBF7D0;
 
-  --shadow-sm:0 1px 2px rgba(15,23,42,.04), 0 1px 3px rgba(15,23,42,.03);
-  --shadow-md:0 4px 12px rgba(15,23,42,.05), 0 1px 3px rgba(15,23,42,.04);
-  --shadow-lg:0 12px 32px rgba(11,31,58,.08), 0 2px 6px rgba(11,31,58,.04);
+  --shadow-sm:0 1px 2px rgba(11,31,58,.05), 0 1px 3px rgba(11,31,58,.04);
+  --shadow-md:0 8px 24px rgba(11,31,58,.07), 0 2px 6px rgba(11,31,58,.04);
+  --shadow-lg:0 18px 44px rgba(7,21,41,.14), 0 4px 12px rgba(7,21,41,.06);
 
   --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   --display:'Plus Jakarta Sans','Inter',sans-serif;
   --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
-  --r-sm:6px; --r-md:10px; --r-lg:14px;
+  --r-sm:8px; --r-md:12px; --r-lg:16px;
 }
 
 *{box-sizing:border-box}
@@ -68,97 +71,122 @@ a:hover{text-decoration:underline}
 button{font:inherit;cursor:pointer}
 svg{display:inline-block;vertical-align:middle;flex-shrink:0}
 
-/* ---------- Header ---------- */
-.topbar{
-  position:sticky;top:0;z-index:30;
-  height:60px;
-  background:var(--navy);
-  border-bottom:1px solid rgba(255,255,255,.08);
+/* ---------- Animations ---------- */
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes popIn{from{opacity:0;transform:translateY(7px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes slideLeft{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+@keyframes pulseDot{0%,100%{box-shadow:0 0 0 0 rgba(155,224,0,.45)}50%{box-shadow:0 0 0 6px rgba(155,224,0,0)}}
+@keyframes pulseRed{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.32)}50%{box-shadow:0 0 0 6px rgba(220,38,38,0)}}
+@keyframes dotBounce{0%,80%,100%{transform:translateY(0);opacity:.35}40%{transform:translateY(-4px);opacity:1}}
+@keyframes kpiBump{0%{transform:scale(1)}40%{transform:scale(1.16)}100%{transform:scale(1)}}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,14px)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* ---------- Dark Header + Hero Band ---------- */
+.top-band{
+  background:
+    radial-gradient(680px 260px at 88% -10%, rgba(155,224,0,.14), transparent 65%),
+    radial-gradient(560px 240px at 12% 110%, rgba(75,116,184,.22), transparent 70%),
+    linear-gradient(180deg, var(--navy-0) 0%, var(--navy) 100%);
   color:#fff;
+  padding-bottom:68px;
+  position:relative;
+  overflow:hidden;
 }
-.topbar-inner{
-  max-width:1380px;height:100%;margin:0 auto;padding:0 24px;
+.top-band::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px);
+  background-size:22px 22px;
+  mask-image:linear-gradient(180deg, rgba(0,0,0,.65), transparent 90%);
+}
+.topbar{
+  max-width:1380px;margin:0 auto;padding:16px 24px;
   display:flex;align-items:center;justify-content:space-between;gap:16px;
+  position:relative;z-index:2;
 }
 .brand{display:flex;align-items:center;gap:12px}
 .logo{
-  font-family:var(--display);font-weight:800;font-size:19px;letter-spacing:-.5px;color:#fff;
+  font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:-.5px;color:#fff;
   display:inline-flex;align-items:baseline;gap:2px;
 }
-.logo .dot{
-  width:7px;height:7px;border-radius:2px;background:var(--lime);display:inline-block;margin-left:1px;
-}
+.logo .dot{width:7px;height:7px;border-radius:2px;background:var(--lime);display:inline-block;margin-left:1px}
 .brand-div{width:1px;height:18px;background:rgba(255,255,255,.16)}
-.brand-sub{font-size:13.5px;font-weight:500;color:#CBD5E1;letter-spacing:-.1px}
+.brand-sub{font-size:13.5px;font-weight:500;color:#CBD5E1}
 .pill-live{
-  display:inline-flex;align-items:center;gap:6px;
+  display:inline-flex;align-items:center;gap:7px;
   font-size:11.5px;font-weight:600;color:var(--lime);
   background:rgba(155,224,0,.1);border:1px solid rgba(155,224,0,.28);
-  padding:3px 9px;border-radius:999px;
+  padding:3px 10px;border-radius:999px;
 }
-.pill-live i{
-  width:6px;height:6px;border-radius:50%;background:var(--lime);
-  box-shadow:0 0 0 3px rgba(155,224,0,.22);
-}
-.nav{display:flex;align-items:center;gap:6px}
+.pill-live i{width:6px;height:6px;border-radius:50%;background:var(--lime);animation:pulseDot 2.2s infinite}
+.nav{display:flex;align-items:center;gap:8px}
 .nav a{
   color:#CBD5E1;font-size:13px;font-weight:500;
-  padding:7px 12px;border-radius:var(--r-sm);transition:background .15s,color .15s;
+  padding:7px 12px;border-radius:var(--r-sm);transition:all .15s;
   text-decoration:none;display:inline-flex;align-items:center;gap:6px;
 }
-.nav a:hover{background:rgba(255,255,255,.08);color:#fff;text-decoration:none}
-.nav a.nav-cta{
-  background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.14);
-}
-.nav a.nav-cta:hover{background:rgba(255,255,255,.16)}
+.nav a:hover{background:rgba(255,255,255,.09);color:#fff;text-decoration:none}
+.nav a.nav-cta{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.16)}
+.nav a.nav-cta:hover{background:rgba(255,255,255,.18)}
 
-/* ---------- Hero strip ---------- */
 .hero{
-  max-width:1380px;margin:0 auto;padding:16px 24px 14px;
-  display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;
+  max-width:1380px;margin:0 auto;padding:12px 24px 8px;
+  display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;
+  position:relative;z-index:2;
 }
 .hero-copy{max-width:740px}
 .eyebrow{
-  display:inline-flex;align-items:center;gap:6px;
-  font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;
-  color:var(--blue);margin-bottom:4px;
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;
+  color:var(--lime);margin-bottom:8px;
 }
 .hero h1{
-  margin:0;font-family:var(--display);font-weight:700;font-size:22px;
-  letter-spacing:-.45px;line-height:1.2;color:var(--navy);
+  margin:0;font-family:var(--display);font-weight:800;font-size:28px;
+  letter-spacing:-.55px;line-height:1.18;color:#fff;
 }
-.hero p{margin:4px 0 0;color:var(--muted);font-size:13.5px;line-height:1.5}
-.hero-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.btn-reset{
+.hero p{margin:8px 0 0;color:#B8C7DA;font-size:14px;line-height:1.58}
+.hero-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.btn-demo{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--lime);color:var(--navy-0);border:0;
+  padding:9px 16px;border-radius:var(--r-sm);font-size:13px;font-weight:700;
+  box-shadow:0 4px 16px rgba(155,224,0,.28);
+  transition:transform .14s,background .15s,box-shadow .15s;
+}
+.btn-demo:hover{background:var(--lime-hover);transform:translateY(-1px);box-shadow:0 6px 20px rgba(155,224,0,.35)}
+.btn-demo:disabled{opacity:.65;cursor:wait;transform:none}
+.btn-ghost-dark{
   display:inline-flex;align-items:center;gap:6px;
-  background:var(--surface);border:1px solid var(--line);color:var(--ink-2);
-  padding:7px 12px;border-radius:var(--r-sm);font-size:12.5px;font-weight:500;
-  box-shadow:var(--shadow-sm);transition:border-color .15s,color .15s,background .15s;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#E2E8F0;
+  padding:8px 13px;border-radius:var(--r-sm);font-size:12.5px;font-weight:500;
+  transition:background .15s,color .15s;
 }
-.btn-reset:hover{border-color:var(--line-strong);color:var(--ink);background:var(--surface-2)}
+.btn-ghost-dark:hover{background:rgba(255,255,255,.14);color:#fff}
 
-/* ---------- Workspace grid ---------- */
+/* ---------- Floating Workspace ---------- */
 .workspace{
-  max-width:1380px;margin:0 auto 32px;padding:0 24px;
-  display:grid;grid-template-columns:410px 1fr;gap:18px;
-  height:min(760px,calc(100vh - 156px));min-height:560px;
+  max-width:1380px;margin:-46px auto 34px;padding:0 24px;
+  display:grid;grid-template-columns:420px minmax(0,1fr);gap:18px;
+  height:min(760px,calc(100vh - 150px));min-height:600px;
+  position:relative;z-index:5;
+  animation:fadeUp .35s ease-out;
 }
 .card-shell{
   background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
-  box-shadow:var(--shadow-md);
+  box-shadow:var(--shadow-lg);
   display:flex;flex-direction:column;min-height:0;overflow:hidden;
 }
 
 /* ---------- Left: Customer Channel ---------- */
 .chat-head{
-  background:var(--navy);color:#fff;padding:14px 16px;
+  background:linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+  color:#fff;padding:14px 16px;
   display:flex;align-items:center;justify-content:space-between;gap:12px;
 }
 .chat-head-left{display:flex;align-items:center;gap:11px}
 .avatar{
-  width:36px;height:36px;border-radius:10px;background:var(--navy-2);
-  border:1px solid rgba(155,224,0,.35);color:var(--lime);
-  display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:15px;
+  width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.08);
+  border:1px solid rgba(155,224,0,.45);color:var(--lime);
+  display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:16px;
   position:relative;
 }
 .avatar::after{
@@ -166,24 +194,25 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
   width:10px;height:10px;border-radius:50%;background:var(--lime);border:2px solid var(--navy);
 }
 .chat-head h2{margin:0;font-family:var(--display);font-size:14.5px;font-weight:700;letter-spacing:-.2px}
-.chat-head small{display:block;font-size:12px;color:#94A3B8}
+.chat-head small{display:block;font-size:12px;color:#9FB3C8}
 .channel-pill{
-  font-size:11px;font-weight:600;color:#CBD5E1;
-  background:rgba(255,255,255,.08);padding:4px 9px;border-radius:999px;
+  font-family:var(--mono);font-size:10.5px;font-weight:600;color:var(--lime);
+  background:rgba(155,224,0,.12);border:1px solid rgba(155,224,0,.28);
+  padding:3px 9px;border-radius:999px;
 }
 
 .chat-feed{
-  flex:1;overflow-y:auto;padding:16px;background:var(--surface-2);
+  flex:1;overflow-y:auto;padding:16px;
+  background:linear-gradient(180deg, #F6F8FB 0%, #F9FBFD 100%);
   display:flex;flex-direction:column;gap:12px;
 }
 .chat-feed::-webkit-scrollbar,.queue-list::-webkit-scrollbar,.detail-pane::-webkit-scrollbar{width:6px}
 .chat-feed::-webkit-scrollbar-thumb,.queue-list::-webkit-scrollbar-thumb,.detail-pane::-webkit-scrollbar-thumb{
   background:#CBD5E1;border-radius:99px;
 }
-@keyframes popIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .bubble{
-  max-width:89%;padding:11px 14px;border-radius:14px;font-size:13.5px;line-height:1.5;
-  white-space:pre-wrap;word-wrap:break-word;animation:popIn .18s ease-out;
+  max-width:90%;padding:11px 14px;border-radius:14px;font-size:13.5px;line-height:1.5;
+  white-space:pre-wrap;word-wrap:break-word;animation:popIn .22s cubic-bezier(.16,1,.3,1);
 }
 .bubble-meta{
   display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;
@@ -194,25 +223,32 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
   align-self:flex-start;border-top-left-radius:4px;box-shadow:var(--shadow-sm);
 }
 .bubble.agent{
-  background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--lime);
+  background:var(--surface);border:1px solid var(--lime-line);border-left:3.5px solid var(--lime);
   color:var(--ink);align-self:flex-start;border-top-left-radius:4px;box-shadow:var(--shadow-sm);
 }
 .bubble.agent .bubble-meta{color:var(--lime-ink)}
 .bubble.user{
   background:var(--navy);color:#F8FAFC;
-  align-self:flex-end;border-top-right-radius:4px;box-shadow:var(--shadow-sm);
+  align-self:flex-end;border-top-right-radius:4px;box-shadow:0 3px 10px rgba(11,31,58,.16);
 }
 .bubble.user .bubble-meta{color:#94A3B8;justify-content:flex-end}
-.bubble.typing{color:var(--muted);font-style:italic;padding:9px 14px}
+
+.typing-dots{display:inline-flex;align-items:center;gap:4px;padding:4px 2px}
+.typing-dots i{
+  width:6px;height:6px;border-radius:50%;background:var(--muted-2);display:inline-block;
+  animation:dotBounce 1.1s infinite ease-in-out;
+}
+.typing-dots i:nth-child(2){animation-delay:.16s}
+.typing-dots i:nth-child(3){animation-delay:.32s}
 
 .guide-card{
   display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
   margin-top:9px;padding:10px 12px;border-radius:var(--r-md);
   background:var(--surface-2);border:1px solid var(--line);
   color:var(--ink);text-decoration:none;white-space:normal;
-  transition:border-color .15s,background .15s,transform .12s;
+  transition:border-color .15s,background .15s,transform .14s,box-shadow .14s;
 }
-.guide-card:hover{border-color:var(--blue);background:#fff;text-decoration:none;transform:translateY(-1px)}
+.guide-card:hover{border-color:var(--blue);background:#fff;text-decoration:none;transform:translateY(-1px);box-shadow:var(--shadow-sm)}
 .guide-card strong{display:block;font-size:13px;font-weight:600;color:var(--blue);margin-bottom:2px}
 .guide-card span{display:block;font-size:12px;color:var(--muted);line-height:1.45}
 .guide-card svg{color:var(--muted-2);margin-top:2px}
@@ -224,26 +260,22 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
   border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;
   transition:all .15s;
 }
-.qr-btn:hover:not([disabled]){border-color:var(--navy);background:var(--navy);color:#fff}
+.qr-btn:hover:not([disabled]){border-color:var(--navy);background:var(--navy);color:#fff;transform:translateY(-1px)}
 .qr-btn.qr-ok:hover:not([disabled]){border-color:var(--green);background:var(--green);color:#fff}
 .qr-btn[disabled]{opacity:.45;cursor:default}
 
-.composer-wrap{
-  border-top:1px solid var(--line);background:var(--surface);padding:12px 14px 14px;
-}
-.scenarios-head{
-  display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;
-}
-.scenarios-head span{font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:.1px}
+.composer-wrap{border-top:1px solid var(--line);background:var(--surface);padding:12px 14px 14px}
+.scenarios-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.scenarios-head span{font-size:11.5px;font-weight:600;color:var(--muted)}
 .scenarios-head small{font-size:11px;color:var(--muted-2)}
-.scenarios{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:11px}
+.scenarios{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .chip{
   display:inline-flex;align-items:center;gap:6px;
   border:1px solid var(--line);background:var(--surface-2);color:var(--ink-2);
   border-radius:8px;padding:5px 9px;font-size:12px;font-weight:500;
   transition:all .14s;text-align:left;
 }
-.chip:hover{border-color:var(--navy);background:#fff;color:var(--navy);box-shadow:var(--shadow-sm)}
+.chip:hover{border-color:var(--navy);background:#fff;color:var(--navy);transform:translateY(-1px);box-shadow:var(--shadow-sm)}
 .chip .code{
   font-family:var(--mono);font-size:10.5px;font-weight:600;
   padding:1px 5px;border-radius:4px;background:#E2E8F0;color:var(--ink-2);
@@ -254,29 +286,28 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
 
 .input-box{
   display:flex;align-items:flex-end;gap:8px;
-  border:1px solid var(--line-strong);border-radius:var(--r-md);
+  border:1.5px solid var(--line-strong);border-radius:var(--r-md);
   padding:6px 6px 6px 12px;background:#fff;
   transition:border-color .15s,box-shadow .15s;
 }
-.input-box:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(11,31,58,.08)}
+.input-box:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(11,31,58,.09)}
 .input-box textarea{
   flex:1;border:0;outline:0;resize:none;padding:4px 0;
-  font:inherit;font-size:13.5px;color:var(--ink);background:transparent;
-  max-height:88px;
+  font:inherit;font-size:13.5px;color:var(--ink);background:transparent;max-height:88px;
 }
 .input-box textarea::placeholder{color:var(--muted-2)}
 .btn-send{
-  width:36px;height:36px;border-radius:8px;border:0;
+  width:36px;height:36px;border-radius:9px;border:0;
   background:var(--navy);color:#fff;
-  display:grid;place-items:center;transition:background .15s,transform .1s;
+  display:grid;place-items:center;transition:all .15s;
 }
-.btn-send:hover{background:var(--navy-2)}
-.btn-send:active{transform:scale(.96)}
+.btn-send:hover{background:var(--navy-2);transform:scale(1.03)}
+.btn-send:active{transform:scale(.95)}
 
 /* ---------- Right: Ops Console ---------- */
 .ops-head{
-  padding:14px 20px;border-bottom:1px solid var(--line);background:var(--surface);
-  display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:13px 20px;border-bottom:1px solid var(--line);background:var(--surface);
+  display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;
 }
 .ops-title h2{margin:0;font-family:var(--display);font-size:15px;font-weight:700;color:var(--navy)}
 .ops-title small{display:block;font-size:12px;color:var(--muted)}
@@ -286,18 +317,21 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
   display:flex;align-items:baseline;gap:7px;
   padding:6px 12px;border-radius:var(--r-sm);
   background:var(--surface-2);border:1px solid var(--line);
+  transition:all .2s;
 }
 .kpi-card b{
-  font-family:var(--display);font-size:18px;font-weight:700;
-  color:var(--navy);font-variant-numeric:tabular-nums;line-height:1;
+  font-family:var(--display);font-size:18px;font-weight:800;
+  color:var(--navy);font-variant-numeric:tabular-nums;line-height:1;display:inline-block;
 }
+.kpi-card b.bump{animation:kpiBump .35s ease}
 .kpi-card span{font-size:11.5px;font-weight:500;color:var(--muted)}
 .kpi-card.kpi-red{background:var(--red-soft);border-color:var(--red-line)}
 .kpi-card.kpi-red b{color:var(--red)}
-.kpi-card.kpi-green{background:var(--lime-soft);border-color:#D9F099}
+.kpi-card.kpi-red.alert-on{animation:pulseRed 2s infinite}
+.kpi-card.kpi-green{background:var(--lime-soft);border-color:var(--lime-line)}
 .kpi-card.kpi-green b{color:var(--lime-ink)}
 
-.ops-grid{flex:1;display:grid;grid-template-columns:260px minmax(0,1fr);min-height:0}
+.ops-grid{flex:1;display:grid;grid-template-columns:255px minmax(0,1fr);min-height:0}
 
 /* Queue sidebar */
 .queue-col{
@@ -307,22 +341,19 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
 .queue-bar{
   padding:10px 14px;border-bottom:1px solid var(--line);
   display:flex;justify-content:space-between;align-items:center;
-  font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;
+  font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.55px;
 }
 .queue-list{list-style:none;margin:0;padding:8px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:5px}
 .q-item{
   padding:10px 11px;border-radius:var(--r-md);cursor:pointer;
   border:1px solid transparent;background:transparent;
-  display:grid;grid-template-columns:auto 1fr;gap:3px 9px;align-items:start;
-  transition:background .12s,border-color .12s,box-shadow .12s;
+  display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 9px;align-items:start;
+  transition:all .14s;animation:slideLeft .2s ease-out;
 }
 .q-item:hover{background:#fff;border-color:var(--line)}
-.q-item.active{
-  background:#fff;border-color:var(--line-strong);
-  box-shadow:var(--shadow-sm);position:relative;
-}
+.q-item.active{background:#fff;border-color:var(--line-strong);box-shadow:var(--shadow-sm);position:relative}
 .q-item.active::before{
-  content:'';position:absolute;left:-1px;top:8px;bottom:8px;width:3px;
+  content:'';position:absolute;left:-1px;top:8px;bottom:8px;width:3.5px;
   border-radius:0 3px 3px 0;background:var(--navy);
 }
 .q-item.is-p1.active::before{background:var(--red)}
@@ -332,12 +363,10 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
 }
 .q-item.done .q-title{color:var(--muted);font-weight:500}
 .q-item .q-sub{
-  grid-column:2;font-size:11.5px;color:var(--muted);
-  display:flex;align-items:center;gap:6px;
+  grid-column:2;font-size:11px;color:var(--muted);
+  display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.q-empty{
-  padding:24px 14px;text-align:center;color:var(--muted);font-size:12.5px;
-}
+.q-empty{padding:28px 14px;text-align:center;color:var(--muted);font-size:12.5px}
 
 /* Priority badges */
 .prio{
@@ -349,49 +378,73 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
 .prio.p3{background:var(--green-soft);color:var(--green-ink);border:1px solid var(--green-line)}
 
 /* Detail pane */
-.detail-pane{overflow-y:auto;overflow-x:hidden;min-width:0;padding:22px 24px 28px;background:var(--surface)}
+.detail-pane{overflow-y:auto;overflow-x:hidden;min-width:0;padding:20px 24px 28px;background:var(--surface)}
 
 .empty-state{
   height:100%;display:flex;flex-direction:column;justify-content:center;
-  max-width:460px;margin:0 auto;padding:16px 0;
+  max-width:480px;margin:0 auto;padding:12px 0;
 }
 .empty-icon{
-  width:44px;height:44px;border-radius:12px;background:var(--surface-2);
-  border:1px solid var(--line);color:var(--navy);
+  width:46px;height:46px;border-radius:12px;background:var(--lime-soft);
+  border:1px solid var(--lime-line);color:var(--lime-ink);
   display:grid;place-items:center;margin-bottom:14px;
 }
-.empty-state h3{margin:0 0 6px;font-family:var(--display);font-size:17px;color:var(--navy)}
+.empty-state h3{margin:0 0 6px;font-family:var(--display);font-size:18px;color:var(--navy)}
 .empty-state p{margin:0 0 16px;color:var(--muted);font-size:13.5px}
 .tour{display:grid;gap:8px}
 .tour-step{
   display:flex;align-items:center;gap:10px;padding:9px 12px;
   border-radius:var(--r-md);background:var(--surface-2);border:1px solid var(--line);
-  font-size:12.5px;color:var(--ink-2);
+  font-size:12.5px;color:var(--ink-2);cursor:pointer;transition:all .14s;
 }
+.tour-step:hover{border-color:var(--navy);background:#fff;transform:translateX(2px)}
 .tour-step code{
-  font-family:var(--mono);font-size:11px;font-weight:600;
-  padding:2px 6px;border-radius:4px;background:#fff;border:1px solid var(--line);color:var(--navy);
-  min-width:46px;text-align:center;
+  font-family:var(--mono);font-size:11px;font-weight:700;
+  padding:2px 7px;border-radius:5px;background:#fff;border:1px solid var(--line);color:var(--navy);
+  min-width:50px;text-align:center;flex-shrink:0;
 }
+
+/* Live Pipeline Strip */
+.pipeline{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;
+  margin-bottom:16px;padding:8px;border-radius:var(--r-md);
+  background:var(--surface-2);border:1px solid var(--line);
+}
+.pipe-step{
+  display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:7px;
+  background:#fff;border:1px solid var(--line);
+  font-size:11.5px;font-weight:600;color:var(--muted);
+  opacity:.45;transform:scale(.98);transition:all .24s ease;
+}
+.pipe-step.done{opacity:1;transform:none;color:var(--ink);border-color:var(--line-strong)}
+.pipe-step.done.is-ok .pipe-dot{background:var(--green);color:#fff}
+.pipe-step.done.is-warn .pipe-dot{background:var(--red);color:#fff}
+.pipe-step.done.is-blue .pipe-dot{background:var(--blue);color:#fff}
+.pipe-dot{
+  width:18px;height:18px;border-radius:50%;background:var(--line);color:var(--muted);
+  display:grid;place-items:center;font-size:10px;font-weight:700;flex-shrink:0;
+}
+.pipe-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 .d-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
 .d-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
-.d-meta .mono{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);font-weight:500}
+.d-meta .mono{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);font-weight:600}
 .status-pill{
-  font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;
+  font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:999px;
   background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2);
 }
 .status-pill.ok{background:var(--green-soft);border-color:var(--green-line);color:var(--green-ink)}
 .status-pill.warn{background:var(--amber-soft);border-color:var(--amber-line);color:var(--amber-ink)}
 
 .d-title{
-  margin:0 0 16px;font-family:var(--display);font-size:19px;font-weight:700;
-  color:var(--navy);letter-spacing:-.3px;line-height:1.3;
+  margin:0 0 14px;font-family:var(--display);font-size:19px;font-weight:700;
+  color:var(--navy);letter-spacing:-.3px;line-height:1.3;word-break:break-word;
 }
 
 .callout{
   display:flex;align-items:flex-start;gap:11px;
-  padding:12px 14px;border-radius:var(--r-md);margin-bottom:18px;font-size:13px;line-height:1.5;
+  padding:12px 14px;border-radius:var(--r-md);margin-bottom:16px;font-size:13px;line-height:1.5;
+  animation:popIn .22s ease;
 }
 .callout.danger{background:var(--red-soft);border:1px solid var(--red-line);color:var(--red-ink)}
 .callout.danger svg{color:var(--red);margin-top:1px}
@@ -399,24 +452,28 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
 .callout.info svg{color:var(--blue);margin-top:1px}
 .callout b{font-weight:700}
 
-.facts-grid{
-  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:20px;
-}
+.facts-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:18px}
 .fact{
   padding:11px 13px;border-radius:var(--r-md);
-  background:var(--surface-2);border:1px solid var(--line);
+  background:var(--surface-2);border:1px solid var(--line);min-width:0;
 }
-.fact-k{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.45px;color:var(--muted);margin-bottom:3px}
-.fact-v{font-size:13px;font-weight:500;color:var(--ink);line-height:1.45}
-.fact.full{grid-column:1 / -1}
+.fact-k{
+  font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+  color:var(--muted);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;
+}
+.fact-v{font-size:13px;font-weight:500;color:var(--ink);line-height:1.45;word-break:break-word}
+.conf-bar{
+  margin-top:6px;height:5px;border-radius:99px;background:#E2E8F0;overflow:hidden;
+}
+.conf-fill{
+  height:100%;border-radius:99px;background:var(--navy);
+  transition:width .45s cubic-bezier(.16,1,.3,1);
+}
+.conf-fill.high{background:var(--green)}
+.conf-fill.p1{background:var(--red)}
 
-.sec-head{
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-  margin:20px 0 8px;flex-wrap:wrap;
-}
-.sec-head h4{
-  margin:0;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.55px;color:var(--muted);
-}
+.sec-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:18px 0 8px;flex-wrap:wrap}
+.sec-head h4{margin:0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.55px;color:var(--muted)}
 .legend{display:flex;gap:10px;font-size:11px;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:4px}
 .legend i{width:8px;height:8px;border-radius:2px;display:inline-block}
@@ -424,28 +481,24 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
 .quote-box{
   border:1px solid var(--line);border-radius:var(--r-md);
   padding:13px 15px;background:var(--surface-2);font-size:13.5px;line-height:1.6;
-  color:var(--ink);white-space:pre-wrap;
+  color:var(--ink);white-space:pre-wrap;word-break:break-word;
 }
 mark{background:none;color:inherit;border-radius:4px;padding:1px 4px}
 mark.cb{background:#FEE2E2;color:#991B1B;font-weight:600}
 mark.kw{background:var(--lime-soft);color:var(--lime-ink);font-weight:500}
 mark.mask{background:#DBEAFE;color:#1D4ED8;font-family:var(--mono);font-size:12px;font-weight:600}
 
-.lgpd-bar{
-  display:flex;align-items:center;gap:7px;margin-top:8px;
-  font-size:12px;color:var(--muted);
-}
+.lgpd-bar{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:12px;color:var(--muted)}
 .lgpd-bar svg{color:var(--blue)}
 .lgpd-bar b{color:var(--ink);font-weight:600}
 
 .guides-list{display:grid;gap:8px;min-width:0}
 .guide-row{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
-  padding:9px 12px;border-radius:var(--r-md);border:1px solid var(--line);
-  background:#fff;transition:border-color .15s,background .15s;text-decoration:none;
-  min-width:0;max-width:100%;
+  padding:10px 12px;border-radius:var(--r-md);border:1px solid var(--line);
+  background:#fff;transition:all .15s;text-decoration:none;min-width:0;max-width:100%;
 }
-.guide-row:hover{border-color:var(--blue);background:var(--surface-2);text-decoration:none}
+.guide-row:hover{border-color:var(--blue);background:var(--surface-2);text-decoration:none;transform:translateX(2px)}
 .guide-row-left{display:flex;align-items:center;gap:9px;min-width:0;flex:1}
 .guide-row code{
   font-family:var(--mono);font-size:11px;font-weight:600;
@@ -468,20 +521,19 @@ mark.mask{background:#DBEAFE;color:#1D4ED8;font-family:var(--mono);font-size:12p
 .hitl-tag{
   display:inline-flex;align-items:center;gap:5px;
   font-size:11px;font-weight:600;color:var(--lime-ink);
-  background:var(--lime-soft);border:1px solid #D9F099;
-  padding:2px 8px;border-radius:999px;
+  background:var(--lime-soft);border:1px solid var(--lime-line);
+  padding:2px 9px;border-radius:999px;
 }
 .draft-box textarea{
-  width:100%;min-height:190px;border:0;outline:0;resize:vertical;
-  padding:13px 15px;font:inherit;font-size:13px;line-height:1.58;color:var(--ink);
-  display:block;
+  width:100%;min-height:185px;border:0;outline:0;resize:vertical;
+  padding:13px 15px;font:inherit;font-size:13px;line-height:1.58;color:var(--ink);display:block;
 }
 .draft-box textarea[readonly]{background:var(--surface-2);color:var(--muted)}
 .draft-actions{
   padding:10px 13px;background:var(--surface-2);border-top:1px solid var(--line);
   display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
 }
-.draft-actions small{font-size:12px;color:var(--muted);max-width:360px}
+.draft-actions small{font-size:12px;color:var(--muted);max-width:350px}
 .btn-row{display:flex;gap:8px}
 .btn{
   display:inline-flex;align-items:center;gap:6px;
@@ -489,7 +541,7 @@ mark.mask{background:#DBEAFE;color:#1D4ED8;font-family:var(--mono);font-size:12p
   border:1px solid transparent;transition:all .15s;
 }
 .btn-primary{background:var(--navy);color:#fff}
-.btn-primary:hover{background:var(--navy-2)}
+.btn-primary:hover{background:var(--navy-2);transform:translateY(-1px)}
 .btn-ghost{background:#fff;border-color:var(--line-strong);color:var(--ink-2)}
 .btn-ghost:hover{border-color:var(--ink);color:var(--ink)}
 
@@ -499,51 +551,64 @@ mark.mask{background:#DBEAFE;color:#1D4ED8;font-family:var(--mono);font-size:12p
 }
 
 /* ---------- Architecture / How it works ---------- */
-.how{max-width:1380px;margin:0 auto;padding:12px 24px 16px}
+.how{max-width:1380px;margin:0 auto;padding:8px 24px 16px}
 .how-header{margin-bottom:18px}
-.how-header h2{margin:0;font-family:var(--display);font-size:19px;font-weight:700;color:var(--navy);letter-spacing:-.3px}
+.how-header h2{margin:0;font-family:var(--display);font-size:20px;font-weight:700;color:var(--navy);letter-spacing:-.3px}
 .how-header p{margin:4px 0 0;color:var(--muted);font-size:13.5px}
 .steps-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:16px}
 .step-card{
   background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
-  padding:16px;box-shadow:var(--shadow-sm);
+  padding:18px;box-shadow:var(--shadow-sm);transition:transform .16s,box-shadow .16s,border-color .16s;
 }
+.step-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--line-strong)}
 .step-num{
   font-family:var(--mono);font-size:11px;font-weight:700;color:var(--navy);
-  background:var(--lime);display:inline-block;padding:2px 7px;border-radius:4px;margin-bottom:10px;
+  background:var(--lime);display:inline-block;padding:2px 8px;border-radius:5px;margin-bottom:10px;
 }
 .step-card h3{margin:0 0 6px;font-family:var(--display);font-size:14.5px;font-weight:700;color:var(--navy)}
 .step-card p{margin:0;font-size:13px;color:var(--muted);line-height:1.55}
 
 .limits-card{
-  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
-  padding:16px 20px;box-shadow:var(--shadow-sm);
+  background:var(--navy);color:#E2E8F0;border-radius:var(--r-md);
+  padding:18px 22px;box-shadow:var(--shadow-md);
   display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;
 }
-.limits-card strong{display:block;font-family:var(--display);font-size:14px;color:var(--navy);margin-bottom:3px}
-.limits-card p{margin:0;font-size:13px;color:var(--muted);max-width:820px;line-height:1.55}
+.limits-card strong{display:block;font-family:var(--display);font-size:15px;color:#fff;margin-bottom:4px}
+.limits-card p{margin:0;font-size:13px;color:#B8C7DA;max-width:860px;line-height:1.58}
 .limits-card code{
-  font-family:var(--mono);font-size:12px;background:var(--surface-2);
-  border:1px solid var(--line);padding:1px 5px;border-radius:4px;color:var(--navy);
+  font-family:var(--mono);font-size:12px;background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.16);padding:1px 6px;border-radius:4px;color:var(--lime);
 }
 
 footer{
-  max-width:1380px;margin:0 auto;padding:20px 24px 40px;
-  border-top:1px solid var(--line);margin-top:20px;
+  max-width:1380px;margin:20px auto 0;padding:20px 24px 40px;
+  border-top:1px solid var(--line);
   display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
   color:var(--muted);font-size:12px;
 }
 
-@media (max-width:1080px){
-  .workspace{grid-template-columns:1fr;height:auto}
+/* Toast */
+.toast{
+  position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:60;
+  background:var(--navy-0);color:#fff;border:1px solid rgba(155,224,0,.4);
+  padding:10px 16px;border-radius:999px;font-size:13px;font-weight:600;
+  box-shadow:var(--shadow-lg);display:inline-flex;align-items:center;gap:8px;
+  animation:toastIn .22s ease;
+}
+.toast i{width:8px;height:8px;border-radius:50%;background:var(--lime)}
+
+@media (max-width:1100px){
+  .workspace{grid-template-columns:1fr;height:auto;margin-top:-36px}
   .card-shell.user{height:620px}
   .card-shell.ops{min-height:740px}
   .ops-grid{grid-template-columns:1fr;grid-template-rows:auto 1fr}
   .queue-col{max-height:220px;border-right:0;border-bottom:1px solid var(--line)}
   .steps-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pipeline{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:640px){
-  .topbar-inner,.hero,.workspace,.how,footer{padding-left:16px;padding-right:16px}
+  .topbar,.hero,.workspace,.how,footer{padding-left:16px;padding-right:16px}
+  .hero h1{font-size:22px}
   .pill-live,.brand-div,.brand-sub{display:none}
   .facts-grid,.steps-grid{grid-template-columns:1fr}
   .detail-pane{padding:16px}
@@ -552,13 +617,13 @@ footer{
 </head>
 <body>
 
-<header class="topbar">
-  <div class="topbar-inner">
+<div class="top-band">
+  <header class="topbar">
     <div class="brand">
       <span class="logo">youshop<span class="dot"></span></span>
       <span class="brand-div"></span>
       <span class="brand-sub">Fila Inteligente</span>
-      <span class="pill-live"><i></i>Protótipo interativo</span>
+      <span class="pill-live"><i></i>Simulador ao vivo</span>
     </div>
     <nav class="nav">
       <a href="#como">Arquitetura</a>
@@ -567,22 +632,26 @@ footer{
         GitHub
       </a>
     </nav>
-  </div>
-</header>
+  </header>
 
-<section class="hero">
-  <div class="hero-copy">
-    <div class="eyebrow">Desafio de Inovação · Estágio YouShop 2027</div>
-    <h1>Triagem operacional antes da fila do WhatsApp</h1>
-    <p>Simule uma mensagem à esquerda e veja em tempo real o que chega para Operações: escudo anti-chargeback (P1), mascaramento LGPD, roteamento de fila e rascunho ancorado na Central de Ajuda.</p>
-  </div>
-  <div class="hero-actions">
-    <button class="btn-reset" id="resetBtn" type="button">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-      Limpar simulação
-    </button>
-  </div>
-</section>
+  <section class="hero">
+    <div class="hero-copy">
+      <div class="eyebrow">Desafio de Inovação · Estágio YouShop 2027</div>
+      <h1>Triagem inteligente antes da fila do WhatsApp</h1>
+      <p>Teste qualquer pergunta livre à esquerda ou rode a demonstração guiada. A camada de triagem protege dados pessoais (LGPD), identifica risco de chargeback (P1), roteia para o time certo e monta o rascunho ancorado na Central de Ajuda.</p>
+    </div>
+    <div class="hero-actions">
+      <button class="btn-demo" id="demoBtn" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+        Rodar demo guiada
+      </button>
+      <button class="btn-ghost-dark" id="resetBtn" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        Limpar
+      </button>
+    </div>
+  </section>
+</div>
 
 <main class="workspace">
   <!-- Canal do cliente -->
@@ -592,7 +661,7 @@ footer{
         <div class="avatar">y</div>
         <div>
           <h2>Ajuda YouShop</h2>
-          <small>Experiência do cliente no app</small>
+          <small>Experiência do usuário no app</small>
         </div>
       </div>
       <span class="channel-pill">In-App</span>
@@ -602,12 +671,12 @@ footer{
 
     <div class="composer-wrap">
       <div class="scenarios-head">
-        <span>Testar com casos reais (Reclame Aqui · nov/2026)</span>
-        <small>clique para enviar</small>
+        <span>Casos reais (Reclame Aqui · nov/2026)</span>
+        <small>ou digite livremente abaixo</small>
       </div>
       <div class="scenarios" id="cases"></div>
       <form class="input-box" id="send">
-        <textarea id="msg" rows="1" placeholder="Ou digite qualquer mensagem de teste…"></textarea>
+        <textarea id="msg" rows="1" placeholder="Ex: Como me afilio? / Quero cancelar minha compra…"></textarea>
         <button class="btn-send" type="submit" aria-label="Enviar mensagem">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
         </button>
@@ -620,7 +689,7 @@ footer{
     <div class="ops-head">
       <div class="ops-title">
         <h2>Console de Operações</h2>
-        <small>Visão interna do time de triagem e atendimento</small>
+        <small>Visão interna de triagem, risco e aprovação humana</small>
       </div>
       <div class="kpi-strip" id="kpis"></div>
     </div>
@@ -640,35 +709,35 @@ footer{
 
 <section class="how" id="como">
   <div class="how-header">
-    <h2>Como a camada de triagem decide</h2>
-    <p>Quatro regras simples executadas antes de qualquer mensagem cair na fila humana.</p>
+    <h2>Arquitetura em 4 etapas</h2>
+    <p>Cada mensagem passa por esta esteira em milissegundos antes de ocupar a fila humana.</p>
   </div>
   <div class="steps-grid">
     <article class="step-card">
       <span class="step-num">01 · LGPD</span>
-      <h3>Dados pessoais saem antes</h3>
-      <p>CPF, e-mail, telefone e nome próprio viram marcadores antes da análise. Nem o console nem uma eventual LLM enxergam o dado bruto.</p>
+      <h3>Sanitização imediata</h3>
+      <p>CPF, CNPJ, e-mail, telefone, cartão e nomes próprios são mascarados antes de aparecer no título da fila, no console ou em qualquer chamada de IA.</p>
     </article>
     <article class="step-card">
       <span class="step-num">02 · P1</span>
       <h3>Escudo anti-chargeback</h3>
-      <p>Menções a contestar no banco, estorno no cartão, golpe ou fraude sobem automaticamente para o topo da fila humana, sem resposta automática.</p>
+      <p>Sinais de contestação bancária, estorno no cartão, cobrança não reconhecida ou fraude sobem automaticamente para o topo da fila humana.</p>
     </article>
     <article class="step-card">
-      <span class="step-num">03 · ROTA</span>
-      <h3>Direto para o time certo</h3>
-      <p>Saque e vitrine vão para Operações (KYC) e Comercial; afiliação parada vai para Onboarding; pedido e reembolso vão para Atendimento ao Comprador.</p>
+      <span class="step-num">03 · INTENÇÃO</span>
+      <h3>Classificação e roteamento</h3>
+      <p>Motor lexical com radicais e tolerância a erros de digitação identifica a intenção, calcula confiança e encaminha direto para o time certo.</p>
     </article>
     <article class="step-card">
-      <span class="step-num">04 · FAQ</span>
-      <h3>Deflexão com saída humana</h3>
-      <p>Dúvidas já documentadas recebem o link oficial na hora. Se o cliente clicar em “Não resolveu”, o caso entra na fila com o resumo pronto.</p>
+      <span class="step-num">04 · HITL</span>
+      <h3>Deflexão com revisão humana</h3>
+      <p>Dúvidas de FAQ recebem o link oficial na hora com saída para humano. Casos sensíveis só são respondidos após aprovação do analista.</p>
     </article>
   </div>
   <div class="limits-card">
     <div>
-      <strong>Limites claros: humano sempre decide</strong>
-      <p>A triagem não libera saque, não aprova cadastro e não envia resposta em casos sensíveis sem aprovação de um analista. Esta página roda 100% no navegador com regras auditáveis; o script <code>triador_youshop.py</code> no repositório replica a mesma lógica em lote e aceita refinamento opcional com Gemini sobre o texto já anonimizado.</p>
+      <strong>Governança: a IA organiza, o humano decide</strong>
+      <p>Nenhuma ação financeira (saque, reembolso, aprovação de cadastro/KYC) é executada de forma autônoma. Esta interface roda 100% no navegador com lógica auditável; o script <code>triador_youshop.py</code> no repositório executa a mesma triagem em lote com suporte opcional à API do Gemini sobre o texto já anonimizado.</p>
     </div>
   </div>
 </section>
@@ -682,23 +751,23 @@ footer{
 /* ---------------- Base de conhecimento (Central de Ajuda pública) ---------------- */
 const KB = [
   { id:'KB-01', titulo:'Como criar meu link 2YOU', url:'https://ajuda.youshop.co/',
-    kw:['link','2you','divulgação','personalizado','afiliado','creator','comecei agora'],
+    stems:['2you','link','divulg','personaliz','bio','rastreav','indica','comissao'],
     resumo:"No app YouShop Creators, em 'Meu link na Bio' ou na aba 'Afiliações', escolha o produto aprovado e gere seu link exclusivo e rastreável (2YOU)." },
   { id:'KB-02', titulo:'Como cadastrar minha rede social', url:'https://ajuda.youshop.co/',
-    kw:['rede social','redes sociais','instagram','tiktok','perfil','vitrine','aceitam'],
-    resumo:'Em Perfil > Redes Sociais, adicione seus canais ativos. As marcas avaliam essas redes antes de aprovar pedidos na Vitrine.' },
+    stems:['rede social','redes sociais','instagram','insta','tiktok','youtube','perfil','vitrine','aceit'],
+    resumo:'Em Perfil > Redes Sociais no app YouShop Creators, adicione seus canais ativos. As marcas avaliam essas redes antes de aprovar pedidos na Vitrine.' },
   { id:'KB-03', titulo:'Como validar sua conta (KYC e saque)', url:'https://ajuda.youshop.co/',
-    kw:['saque','sacar','validação','validar','cpf','documento','rg','carteira','bloqueado','comissão'],
-    resumo:'É possível se afiliar e vender normalmente, mas o saque das comissões na Carteira só é liberado após a validação de identidade (documento oficial e CPF) no Perfil.' },
+    stems:['saq','sacar','valid','kyc','documento','rg','cnh','selfie','carteir','saldo','bloque','comissa','dinheir','pix','receb'],
+    resumo:'Você pode se afiliar e vender normalmente, mas para liberar saques de comissões na Carteira é obrigatório concluir a validação de identidade (documento oficial e CPF) no Perfil.' },
   { id:'KB-04', titulo:'Como solicitar e acompanhar uma afiliação', url:'https://ajuda.youshop.co/',
-    kw:['afiliação','afiliei','retorno','em análise','aprovação','marca','vitrine'],
-    resumo:"Em 'Minhas Afiliações' aparecem os status Aprovadas, Em análise e Reprovadas. Marcas com aprovação manual avaliam o perfil antes de liberar o link." },
+    stems:['afili','marca','vitrine','aprov','analise','solicit','vend','produt','creator','parcer'],
+    resumo:"No app YouShop Creators, acesse a Vitrine, escolha a marca/produto e toque em 'Solicitar afiliação'. Em 'Minhas Afiliações', acompanhe os status Aprovadas, Em análise e Reprovadas." },
   { id:'KB-05', titulo:'Reembolso de produto e acompanhamento do pedido', url:'https://customer.youshop.com.br/login',
-    kw:['reembolso','cancelado','cancelar','estorno','prazo','comprovante','suplemento'],
-    resumo:'Status da compra e comprovante de estorno ficam na Área de Compras, com o e-mail usado no pedido. Após aprovado, o prazo do crédito depende da operadora do cartão ou meio de pagamento.' },
+    stems:['reembols','cancel','estorn','devolv','devoluc','prazo','comprov','suplement','arrepend'],
+    resumo:'Acompanhe o status da compra e o comprovante de estorno na Área de Compras usando o e-mail do pedido. Após aprovado, o prazo de crédito depende da operadora do cartão ou meio de pagamento.' },
   { id:'KB-06', titulo:'Pedido, e-mail de confirmação e papel da YouShop', url:'https://customer.youshop.com.br/login',
-    kw:['e-mail','confirmação','pedido','rastrear','rastreio','entrega','vendedor','compra'],
-    resumo:'A YouShop processa o pagamento; o envio e o rastreio ficam com o vendedor do produto. Mesmo sem o e-mail de confirmação, a compra aparece na Área de Compras.' }
+    stems:['email','e-mail','confirm','pedid','rastre','entreg','vendedor','compr','cheg','envi','codigo','frete'],
+    resumo:'A YouShop processa o pagamento; o envio e o rastreio ficam com o vendedor do produto. Mesmo sem o e-mail de confirmação na caixa de entrada, você consulta a compra na Área de Compras.' }
 ];
 
 /* ---------------- Casos de teste ---------------- */
@@ -713,7 +782,7 @@ const CASES = [
     titulo:'Não consigo sacar e não me aceitam na vitrine',
     msg:'Boa noite, infelizmente não estou conseguindo realizar o saque e também vi que não estão me aceitando na vitrine de afiliados. Gostaria de uma resolução desse problema.' },
   { ref:'RA-04', label:'Ajuda com link 2YOU', kind:'is-faq',
-    titulo:'Ajuda com o link',
+    titulo:'Ajuda com o link 2YOU e redes sociais',
     msg:'Olá! Tudo bem? Comecei agora nesse mundo de creator e preciso de ajuda com o link da 2YOU. Entre em contato para tirar algumas dúvidas, como adicionar redes sociais, links personalizados, etc. Não tive retorno até o momento.' },
   { ref:'RA-05', label:'Ameaça contestar no banco', kind:'is-p1',
     titulo:'Não recebi e-mail de confirmação do pedido',
@@ -723,61 +792,148 @@ const CASES = [
     msg:'Oi, meu nome é Carla Mendes, CPF 123.456.789-09, e-mail carla.mendes@gmail.com. Comprei um curso ontem e apareceu uma segunda cobrança no cartão que eu não reconheço. Me liga no (11) 98765-4321.' }
 ];
 
-/* ---------------- Regras ---------------- */
-const CHARGEBACK = ['contestar','contestação','contestei','com o banco','no banco','estorno no cartão','chargeback','procon','golpe','fraude','não reconheço','disputa'];
-
-const RULES = [
-  { when:['saque','sacar','vitrine','comissão'], kb:['KB-03','KB-02'], persona:'Creator com bloqueio', fila:'Operações (KYC) + Comercial', team:'os times de Operações e Comercial', prio:2,
-    acao:'Revisão humana com checklist de KYC e vitrine',
-    motivo:'Saque depende da validação de identidade (KYC); entrada na vitrine depende da análise comercial.',
-    contexto:'Sobre o saque e a vitrine: são duas análises separadas. O saque é liberado depois da validação de identidade (KYC), e a entrada na vitrine depende da aprovação das marcas. Já encaminhamos para os dois times.' },
-  { when:['afiliação','afiliei','dia 30','sem retorno'], kb:['KB-04'], persona:'Creator aguardando aprovação', fila:'Operações · Onboarding', team:'o time de Onboarding', prio:2,
-    acao:'Checar log do cadastro e cobrar posição da marca',
-    motivo:'Solicitação parada além do prazo normal. Pode ser falha de sincronização ou pendência da marca.',
-    contexto:'Já pedimos ao time responsável uma posição sobre a sua solicitação de afiliação. Enquanto isso, o status atualizado aparece no app:' },
-  { when:['2you','comecei agora','link','rede social','redes sociais'], kb:['KB-01','KB-02'], persona:'Creator iniciante', fila:'Autoatendimento', team:null, prio:3,
-    acao:'Enviar guia oficial ao cliente',
-    motivo:'Dúvida básica, já documentada nos guias de Creators.',
-    contexto:'Separei os passos da Central de Ajuda que respondem a sua dúvida:' },
-  { when:['compra','comprei','pedido','reembolso','estorno','entrega','rastre','cancel','cobrança','cartão','boleto','pix'], kb:['KB-05','KB-06'], persona:'Comprador', fila:'Atendimento ao Comprador', team:'o Atendimento ao Comprador', prio:2,
-    acao:'Orientar Área de Compras e contato do vendedor',
-    motivo:'Dúvida de pedido, envio ou reembolso.',
-    contexto:'A YouShop processa o pagamento, e o envio fica com o vendedor do produto. Compra, reembolso e comprovante aparecem na Área de Compras, com o e-mail usado no pedido:' }
+/* ---------------- Intenções & Motor Lexical PT-BR ---------------- */
+const CHARGEBACK_TERMS = [
+  'contestar','contestacao','contestei','com o banco','no banco','estorno no cartao',
+  'chargeback','procon','golpe','fraude','nao reconheco','cobranca indevida',
+  'cobranca duplicada','segunda cobranca','disputa','advogado','processar','reclame aqui','bloquear cartao'
 ];
+
+const INTENTS = [
+  {
+    id:'kyc_saque',
+    persona:'Creator (Saque / KYC / Vitrine)',
+    fila:'Operações (KYC) + Comercial',
+    team:'os times de Operações (KYC) e Comercial',
+    prio:2,
+    kb:['KB-03','KB-02'],
+    stems:['saq','sacar','sacand','retir','carteir','saldo','kyc','valid','identidad','document','selfie','bloque','vitrin','nao aceit','reprovad','recusad'],
+    phrases:['nao consigo sacar','liberar saque','validar conta','nao me aceitam','vitrine de afiliados','dinheiro preso','sacar comissao'],
+    acao:'Revisão humana com checklist de KYC e vitrine',
+    motivo:'Saque depende da validação de identidade (KYC) e vitrine depende de análise comercial/perfil.',
+    contexto:'Sobre saque e vitrine: são duas análises separadas. O saque é liberado após a validação de identidade (KYC) no Perfil, e a entrada na vitrine depende da aprovação das marcas. Já encaminhamos seu caso para os dois times.'
+  },
+  {
+    id:'afiliacao_parada',
+    persona:'Creator (Aguardando aprovação)',
+    fila:'Operações · Onboarding',
+    team:'o time de Onboarding',
+    prio:2,
+    kb:['KB-04','KB-02'],
+    stems:['sem retorno','nao tive retorno','em analise','pendent','demor','aguard','parado','dia 30','nao aprov','travad'],
+    requireAny:['afili','marca','vitrine','solicit','cadast','aprov'],
+    phrases:['me afiliei','sem retorno sobre','ainda nao tive retorno','afiliacao em analise','aguardando aprovacao'],
+    acao:'Checar log do cadastro e cobrar posição da marca',
+    motivo:'Solicitação de afiliação parada além do prazo normal; verificar sincronização ou pendência da marca.',
+    contexto:'Já acionamos o time responsável para verificar o status da sua solicitação de afiliação com a marca. Enquanto isso, você pode acompanhar atualizações direto no app:'
+  },
+  {
+    id:'creator_faq',
+    persona:'Creator Iniciante',
+    fila:'Autoatendimento (Deflexão FAQ)',
+    team:null,
+    prio:3,
+    kb:['KB-04','KB-01','KB-02'],
+    stems:['afili','2you','link','creator','criador','divulg','rede social','redes sociais','instagram','insta','tiktok','bio','comecei','comecar','parcer','comissa'],
+    phrases:['como me afilio','quero me afiliar','como se afiliar','como ser afiliado','como virar afiliado','como criar link','link da 2you','adicionar redes sociais','cadastrar rede social','como funciona a afiliacao','quero ser creator','como divulgar','como vender'],
+    acao:'Deflexão imediata com guia oficial da Central de Ajuda',
+    motivo:'Dúvida operacional de onboarding já documentada nos guias oficiais de Creators.',
+    contexto:'Separei os passos oficiais da Central de Ajuda que respondem exatamente à sua dúvida:'
+  },
+  {
+    id:'reembolso',
+    persona:'Comprador (Reembolso / Cancelamento)',
+    fila:'Atendimento ao Comprador',
+    team:'o Atendimento ao Comprador',
+    prio:2,
+    kb:['KB-05','KB-06'],
+    stems:['reembols','cancel','estorn','devolv','devoluc','arrepend','desist','suplement','comprov','prazo'],
+    phrases:['solicitar reembolso','pedir reembolso','cancelar compra','cancelar pedido','prazo de reembolso','quero meu dinheiro','estorno do pagamento'],
+    acao:'Orientar Área de Compras e conferir status do estorno',
+    motivo:'Solicitação de cancelamento, reembolso ou dúvida sobre prazo de estorno.',
+    contexto:'Acompanhamento da compra e comprovante de estorno ficam disponíveis na Área de Compras usando o e-mail do pedido. Já encaminhamos seu caso para o time conferir:'
+  },
+  {
+    id:'pedido_rastreio',
+    persona:'Comprador (Pedido / Entrega)',
+    fila:'Atendimento ao Comprador',
+    team:'o Atendimento ao Comprador',
+    prio:2,
+    kb:['KB-06','KB-05'],
+    stems:['compr','pedid','rastre','entreg','confirm','email','e-mail','vendedor','envi','frete','cheg','cobranc','cartao','boleto','pix','pagament','curso','produt'],
+    phrases:['nao recebi email','nao recebi e-mail','email de confirmacao','acompanhar meu pedido','onde esta meu pedido','codigo de rastreio','nao chegou','fiz uma compra','segunda cobranca'],
+    acao:'Orientar Área de Compras e intermediar contato com o vendedor',
+    motivo:'Dúvida sobre confirmação, pagamento, entrega ou rastreio de pedido.',
+    contexto:'A YouShop processa o pagamento e o envio/rastreio ficam com o vendedor do produto. Mesmo sem o e-mail de confirmação, você acompanha tudo na Área de Compras:'
+  }
+];
+
+const GREETING_ONLY = /^(?:oi+|ola+|bom dia|boa tarde|boa noite|e ai|hey|hello|alguem ai|tudo bem|td bem|preciso de ajuda|quero ajuda|me ajuda|ajuda|socorro|atendimento|suporte|falar com alguem|humano|atendente|aqui e|meu nome e|sou|cpf|email|telefone|\s|[.,!?-]|\[(?:CPF|CNPJ|E-MAIL|TELEFONE|CARTAO|NOME)\])+$/;
 
 /* ---------------- Icons ---------------- */
 const ICO_EXT = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
 const ICO_SHIELD = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
 const ICO_LOCK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
 const ICO_INFO = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
-const ICO_INBOX = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>';
+const ICO_SPARK = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1M5.6 18.4l2.1-2.1m8.6-8.6 2.1-2.1"/></svg>';
+const ICO_CHECK = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
 
-/* ---------------- Utilidades ---------------- */
+/* ---------------- Utilidades & Fuzzy Matching ---------------- */
 const $ = s => document.querySelector(s);
 const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const norm = s => Array.from(s.toLowerCase()).map(c => c.normalize('NFD').charAt(0)).join('');
 const hhmm = () => new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-const MASK_RE = /\[(CPF|E-MAIL|TELEFONE|NOME)\]/g;
+const MASK_RE = /\[(CPF|CNPJ|E-MAIL|TELEFONE|CARTAO|NOME)\]/g;
 
-function findAll(normText, terms){
+function lev1(a, b){
+  if (Math.abs(a.length - b.length) > 1) return false;
+  let i = 0, j = 0, diff = 0;
+  while (i < a.length && j < b.length){
+    if (a[i] === b[j]){ i++; j++; }
+    else {
+      if (++diff > 1) return false;
+      if (a.length > b.length) i++;
+      else if (b.length > a.length) j++;
+      else { i++; j++; }
+    }
+  }
+  return diff + (a.length - i) + (b.length - j) <= 1;
+}
+
+function findMatches(normText, terms){
   const out = [];
-  for (const t of terms){
-    const re = new RegExp('(?<![a-z0-9])' + escRe(norm(t)) + '[a-z0-9]*', 'g');
-    let m; while ((m = re.exec(normText))) out.push({s:m.index, e:m.index + m[0].length, term:t});
+  const words = [];
+  const wRe = /[a-z0-9]+/g;
+  let wm; while ((wm = wRe.exec(normText))) words.push({w:wm[0], s:wm.index, e:wm.index + wm[0].length});
+
+  for (const rawTerm of terms){
+    const t = norm(rawTerm);
+    if (t.includes(' ')){
+      const re = new RegExp('(?<![a-z0-9])' + escRe(t) + '[a-z0-9]*', 'g');
+      let m; while ((m = re.exec(normText))) out.push({s:m.index, e:m.index + m[0].length, term:rawTerm});
+    } else {
+      for (const wd of words){
+        const prefixHit = wd.w.startsWith(t) && (t.length >= 3 || wd.w === t);
+        const fuzzyHit = !prefixHit && t.length >= 5 && wd.w.length >= 5 && lev1(wd.w.slice(0, t.length), t);
+        if (prefixHit || fuzzyHit) out.push({s:wd.s, e:wd.e, term:rawTerm});
+      }
+    }
   }
   return out;
 }
-const hits = (normText, terms) => [...new Set(findAll(normText, terms).map(h => h.term))];
+const uniqueTerms = (normText, terms) => [...new Set(findMatches(normText, terms).map(m => m.term))];
 
-/* ---------------- LGPD ---------------- */
+/* ---------------- Camada LGPD (sempre antes de qualquer título/log) ---------------- */
 function sanitize(text){
   const masks = [];
   const steps = [
+    [/\b\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}\b/g, '[CNPJ]', 'CNPJ'],
+    [/\b(?:\d{4}[\s-]?){3}\d{4}\b/g, '[CARTAO]', 'cartão'],
     [/\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/g, '[CPF]', 'CPF'],
     [/[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+/g, '[E-MAIL]', 'e-mail'],
     [/(?:\+55\s?)?(?:\(?\d{2}\)?\s?)?(?:9\d{4}|\d{4})-?\d{4}\b/g, '[TELEFONE]', 'telefone'],
-    [/((?:[Mm]eu nome é|[Mm]e chamo|[Aa]qui é (?:a|o))\s+)[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+(?:\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+)?/g, '$1[NOME]', 'nome']
+    [/((?:[Mm]eu nome é|[Mm]e chamo|[Aa]qui é (?:a |o )?|[Ss]ou (?:a |o )?)\s*)[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+(?:\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+)?/g, '$1[NOME]', 'nome']
   ];
   for (const [re, rep, label] of steps){
     const n = (text.match(re) || []).length;
@@ -786,59 +942,103 @@ function sanitize(text){
   return {clean:text, masks};
 }
 
-/* ---------------- Triagem ---------------- */
+/* ---------------- Motor de Triagem ---------------- */
 let seq = 1041;
 const tickets = [];
 let selected = null;
+let prevKpi = [0, 0, 0, 0];
+
+function isGreetingOnly(cleanText){
+  const n = norm(cleanText).trim();
+  return n.length < 75 && GREETING_ONLY.test(n);
+}
 
 function classify(c){
   const {clean, masks} = sanitize(c.msg);
-  const full = (c.titulo ? c.titulo + '. ' : '') + clean;
+  const safeTitle = c.titulo ? sanitize(c.titulo).clean : (clean.slice(0, 62) + (clean.length > 62 ? '…' : ''));
+  const full = (c.titulo ? safeTitle + '. ' : '') + clean;
   const blanked = norm(full.replace(MASK_RE, m => ' '.repeat(m.length)));
 
-  const cb = hits(blanked, CHARGEBACK);
-  const rule = RULES.find(r => hits(blanked, r.when).length) || null;
-  const guides = KB.map(a => { const h = hits(blanked, a.kw); return {a, h, score: h.length + (rule && rule.kb.includes(a.id) ? 2 : 0)}; })
-                   .filter(x => x.score > 0)
-                   .sort((x, y) => y.score - x.score)
-                   .slice(0, 2);
+  const cb = uniqueTerms(blanked, CHARGEBACK_TERMS);
+
+  // Pontuação de intenções
+  const scored = INTENTS.map(intent => {
+    const pHits = uniqueTerms(blanked, intent.phrases || []);
+    const sHits = uniqueTerms(blanked, intent.stems || []);
+    if (intent.requireAny && !uniqueTerms(blanked, intent.requireAny).length) return {intent, score:0, hits:[]};
+    const score = pHits.length * 4 + sHits.length * 1.8;
+    return {intent, score, hits:[...new Set([...pHits, ...sHits])]};
+  }).filter(x => x.score > 0).sort((a, b) => b.score - a.score);
+
+  const best = scored[0] || null;
+  const rule = best ? best.intent : null;
+
+  // Confiança realista baseada na força do match + sinais
+  let confidence = 0;
+  if (cb.length) confidence = Math.min(99, 91 + cb.length * 4);
+  else if (best) confidence = Math.min(98, Math.round(70 + Math.min(best.score, 9) * 3.1));
+  else confidence = 42;
+
+  // Busca de guias na KB
+  const guides = KB.map(a => {
+    const h = uniqueTerms(blanked, a.stems);
+    const bonus = (rule && rule.kb.includes(a.id)) ? (rule.kb.indexOf(a.id) === 0 ? 3.5 : 2) : 0;
+    return {a, h, score: h.length * 1.5 + bonus};
+  }).filter(x => x.score >= 1.5).sort((a, b) => yScore(b, a)).slice(0, 2);
+
+  function yScore(b, a){ return b.score - a.score; }
 
   const t = {
-    n: ++seq, ref: c.ref || 'Livre', titulo: c.titulo || c.msg.slice(0, 64) + (c.msg.length > 64 ? '…' : ''),
-    raw: c.msg, clean, masks, cb, rule, time: hhmm(),
+    n: ++seq,
+    ref: c.ref || 'Livre',
+    titulo: safeTitle,
+    clean, masks, cb, rule, confidence,
+    time: hhmm(),
+    isNew: true,
     guides: guides.map(x => x.a),
-    terms: [...new Set([...guides.flatMap(x => x.h), ...(rule ? hits(blanked, rule.when) : [])])],
+    terms: [...new Set([...(best ? best.hits : []), ...guides.flatMap(x => x.h)])],
     persona: rule ? rule.persona : 'Não identificado',
     fila: rule ? rule.fila : 'Atendimento geral',
     prio: rule ? rule.prio : 2,
     acao: rule ? rule.acao : 'Leitura humana',
-    motivo: rule ? rule.motivo : 'Assunto fora da base de conhecimento. Nenhuma resposta automática.',
+    motivo: rule ? rule.motivo : 'Assunto fora da base mapeada. Encaminhado sem resposta automática.',
     status: 'fila'
   };
 
   if (cb.length){
     t.prio = 1;
-    t.fila = 'Prioridade anti-chargeback → ' + t.fila;
+    t.fila = 'Escudo Anti-Chargeback → ' + (rule ? rule.fila : 'Atendimento ao Comprador');
     t.acao = 'Atendimento humano imediato';
-    t.motivo = 'Cliente mencionou ' + cb.map(x => '“' + x + '”').join(', ') + '. Um atendente precisa assumir antes que vire contestação no banco.';
+    t.motivo = 'Risco de disputa detectado por ' + cb.map(x => '“' + x + '”').join(', ') + '. Prioridade máxima para evitar chargeback.';
   } else if (t.prio === 3 && t.guides.length){
     t.status = 'auto';
   } else if (t.prio === 3){
     t.prio = 2; t.fila = 'Atendimento geral'; t.acao = 'Leitura humana';
   }
+
   t.draft = makeDraft(t);
   return t;
 }
 
 function makeDraft(t){
   const L = ['Olá! Aqui é da equipe de atendimento da YouShop.'];
-  if (t.cb.length) L.push('Entendemos a sua preocupação, e o seu caso já está com prioridade aqui no time. Vamos resolver por este canal.');
+  if (t.cb.length) L.push('Entendemos a sua preocupação e colocamos seu caso como prioridade aqui no time. Vamos resolver diretamente por este canal.');
   if (t.escalated) L.push('Vimos que o guia enviado antes não resolveu, então uma pessoa do time assumiu a sua conversa.');
   if (t.rule && !(t.escalated && t.rule.prio === 3)) L.push(t.rule.contexto);
   else if (!t.rule) L.push('Recebemos sua mensagem e uma pessoa do time vai analisar o seu caso com atenção.');
   if (t.guides.length) L.push(t.guides.map(g => '• ' + g.titulo + '\n  ' + g.resumo + '\n  ' + g.url).join('\n\n'));
   L.push('Se quiser complementar, é só responder aqui. Por segurança, não envie fotos de documentos ou dados bancários fora do app oficial.');
   return L.join('\n\n');
+}
+
+/* ---------------- Toast ---------------- */
+function toast(msg){
+  document.querySelectorAll('.toast').forEach(el => el.remove());
+  const d = document.createElement('div');
+  d.className = 'toast';
+  d.innerHTML = '<i></i><span>' + esc(msg) + '</span>';
+  document.body.appendChild(d);
+  setTimeout(() => { d.style.opacity = '0'; d.style.transition = 'opacity .25s'; setTimeout(() => d.remove(), 260); }, 2400);
 }
 
 /* ---------------- Chat ---------------- */
@@ -856,47 +1056,80 @@ const guideLinks = gs => gs.map(g =>
 ).join('');
 const linkify = s => esc(s).replace(/https?:\/\/[^\s]+/g, u => '<a href="' + u + '" target="_blank" rel="noopener">' + u + '</a>');
 
+function showTyping(){
+  return bubble('bot', 'Assistente de ajuda', '<span class="typing-dots"><i></i><i></i><i></i></span>');
+}
+
+function botClarify(masks){
+  const typing = showTyping();
+  setTimeout(() => {
+    typing.remove();
+    const lgpdNote = masks.length
+      ? 'Por segurança, já ocultei seu ' + masks.map(m => m.label).join(', ') + ' antes de registrar a conversa.\n\n'
+      : '';
+    const d = bubble('bot', 'Assistente de ajuda',
+      lgpdNote + 'Me conta rapidinho sobre o que você precisa de ajuda, ou escolha um atalho:' +
+      '<div class="quick-replies">' +
+        '<button class="qr-btn" data-q="Como me afilio e gero meu link 2YOU?">Quero me afiliar / Link</button>' +
+        '<button class="qr-btn" data-q="Não consigo realizar saque na minha conta">Saque ou Vitrine</button>' +
+        '<button class="qr-btn" data-q="Quero acompanhar meu pedido e reembolso">Pedido / Reembolso</button>' +
+      '</div>');
+    d.querySelectorAll('[data-q]').forEach(btn => {
+      btn.onclick = () => { lock(d); submit({msg: btn.dataset.q}); };
+    });
+  }, 520);
+}
+
 function botAnswer(t){
-  const typing = bubble('bot typing', 'Assistente de ajuda', 'Analisando mensagem…');
+  const typing = showTyping();
   setTimeout(() => {
     typing.remove();
     if (t.status === 'auto'){
-      const d = bubble('bot', 'Assistente de ajuda', 'Encontrei a resposta na Central de Ajuda:' + guideLinks(t.guides) +
+      const d = bubble('bot', 'Assistente de ajuda', 'Encontrei o passo a passo oficial na Central de Ajuda:' + guideLinks(t.guides) +
         '<div class="quick-replies"><button class="qr-btn qr-ok" data-ok>Resolveu</button><button class="qr-btn" data-no>Não resolveu, falar com alguém</button></div>');
       d.querySelector('[data-ok]').onclick = () => { lock(d); resolveAuto(t); };
       d.querySelector('[data-no]').onclick = () => { lock(d); escalate(t); };
     } else if (t.cb.length){
-      bubble('bot', 'Assistente de ajuda', 'Sua mensagem foi marcada como prioritária e já está com uma pessoa do nosso time. A resposta chega por aqui mesmo.' +
+      bubble('bot', 'Assistente de ajuda', 'Sua mensagem foi marcada como prioritária (P1) e já está no topo da fila com uma pessoa do nosso time. A resposta chega por aqui mesmo.' +
         (t.guides.length ? '\n\nEnquanto isso, se ajudar:' + guideLinks(t.guides.slice(0, 1)) : ''));
     } else if (t.rule){
       bubble('bot', 'Assistente de ajuda', 'Encaminhei para ' + esc(t.rule.team) + '. Uma pessoa do time continua a conversa por aqui.' +
         (t.guides.length ? '\n\nEnquanto isso, talvez ajude:' + guideLinks(t.guides) : ''));
     } else {
-      bubble('bot', 'Assistente de ajuda', 'Não encontrei esse assunto na Central de Ajuda, então passei sua mensagem diretamente para uma pessoa do time.');
+      bubble('bot', 'Assistente de ajuda', 'Não encontrei esse assunto específico na Central de Ajuda, então encaminhei sua mensagem diretamente para uma pessoa do time.');
     }
-  }, 550);
+  }, 560);
 }
 function lock(d){ d.querySelectorAll('button').forEach(b => b.disabled = true); }
 
 function resolveAuto(t){
   bubble('user', 'Você', 'Resolveu, obrigado!');
   t.status = 'resolvido';
-  setTimeout(() => bubble('bot', 'Assistente de ajuda', 'Ótimo! Se precisar de mais alguma coisa, é só chamar.'), 350);
+  setTimeout(() => bubble('bot', 'Assistente de ajuda', 'Perfeito! Se precisar de mais alguma coisa, é só chamar por aqui.'), 350);
   render();
+  toast('Ticket #' + t.n + ' defletido sem ocupar a fila humana');
 }
 function escalate(t){
   bubble('user', 'Você', 'Não resolveu, quero falar com alguém.');
   t.escalated = true; t.status = 'fila'; t.prio = 2;
   t.fila = 'Atendimento humano (escalado pelo cliente)';
-  t.acao = 'Assumir a conversa';
-  t.motivo = 'Guia enviado automaticamente, mas o cliente respondeu que não resolveu.';
+  t.acao = 'Assumir a conversa com contexto';
+  t.motivo = 'Guia enviado automaticamente, mas o cliente informou que ainda precisa de ajuda humana.';
   t.draft = makeDraft(t);
-  setTimeout(() => bubble('bot', 'Assistente de ajuda', 'Combinado. Passei sua conversa para uma pessoa do time já com o resumo da dúvida — você não vai precisar explicar tudo de novo.'), 350);
+  setTimeout(() => bubble('bot', 'Assistente de ajuda', 'Combinado! Passei sua conversa para uma pessoa do time já com o resumo da dúvida — você não vai precisar explicar tudo de novo.'), 350);
   selected = t.n; render();
+  toast('Ticket #' + t.n + ' escalado para a fila humana');
 }
 
 function submit(c){
   bubble('user', 'Você', esc(c.msg));
+  const {clean, masks} = sanitize(c.msg);
+  // Se for apenas cumprimento/mensagem vaga sem assunto (ex: "Olá, aqui é 322.255.455-85 preciso de ajuda"), pede contexto sem poluir a fila
+  if (!c.ref && isGreetingOnly(clean)){
+    botClarify(masks);
+    if (masks.length) toast('LGPD: ' + masks.map(m => m.label).join(', ') + ' protegido antes do registro');
+    return;
+  }
   const t = classify(c);
   tickets.push(t);
   selected = t.n;
@@ -915,13 +1148,22 @@ const STATUS = {
 const isOpen = t => t.status === 'fila' || t.status === 'auto';
 
 function renderKpis(){
-  const k = [
-    ['', tickets.length, 'analisados'],
-    ['kpi-red', tickets.filter(t => t.cb.length).length, 'alerta P1'],
-    ['kpi-green', tickets.filter(t => t.status === 'resolvido').length, 'defletidos'],
-    ['', tickets.filter(t => t.status === 'fila').length, 'fila humana']
+  const vals = [
+    tickets.length,
+    tickets.filter(t => t.cb.length).length,
+    tickets.filter(t => t.status === 'resolvido').length,
+    tickets.filter(t => t.status === 'fila').length
   ];
-  $('#kpis').innerHTML = k.map(([c, v, l]) => '<div class="kpi-card ' + c + '"><b>' + v + '</b><span>' + l + '</span></div>').join('');
+  const cfg = [
+    ['', vals[0], 'analisados'],
+    ['kpi-red' + (vals[1] > 0 ? ' alert-on' : ''), vals[1], 'alerta P1'],
+    ['kpi-green', vals[2], 'defletidos'],
+    ['', vals[3], 'fila humana']
+  ];
+  $('#kpis').innerHTML = cfg.map(([c, v, l], i) =>
+    '<div class="kpi-card ' + c + '"><b class="' + (v !== prevKpi[i] ? 'bump' : '') + '">' + v + '</b><span>' + l + '</span></div>'
+  ).join('');
+  prevKpi = vals;
 }
 
 function renderQueue(){
@@ -934,15 +1176,20 @@ function renderQueue(){
       '<span class="q-sub"><span>#' + t.n + '</span><span>·</span><span>' + esc(STATUS[t.status]) + '</span></span>' +
     '</li>'
   ).join('') : '<li class="q-empty">Nenhum ticket recebido ainda.</li>';
-  document.querySelectorAll('.q-item').forEach(li => li.onclick = () => { selected = +li.dataset.n; render(); });
+  document.querySelectorAll('.q-item').forEach(li => li.onclick = () => {
+    const t = tickets.find(x => x.n === +li.dataset.n);
+    if (t) t.isNew = false;
+    selected = +li.dataset.n;
+    render();
+  });
 }
 
 function highlight(t){
   const text = t.clean, n = norm(text), ranges = [];
   let m; MASK_RE.lastIndex = 0;
   while ((m = MASK_RE.exec(text))) ranges.push({s:m.index, e:m.index + m[0].length, k:'mask', o:0});
-  findAll(n, t.cb).forEach(r => ranges.push({...r, k:'cb', o:1}));
-  findAll(n, t.terms).forEach(r => ranges.push({...r, k:'kw', o:2}));
+  findMatches(n, t.cb).forEach(r => ranges.push({...r, k:'cb', o:1}));
+  findMatches(n, t.terms).forEach(r => ranges.push({...r, k:'kw', o:2}));
   ranges.sort((a, b) => a.s - b.s || a.o - b.o || b.e - a.e);
   let out = '', pos = 0;
   for (const r of ranges){
@@ -953,6 +1200,12 @@ function highlight(t){
   return out + esc(text.slice(pos));
 }
 
+function animatePipeline(isNew){
+  const steps = document.querySelectorAll('.pipe-step');
+  if (!isNew){ steps.forEach(s => s.classList.add('done')); return; }
+  steps.forEach((s, i) => setTimeout(() => s.classList.add('done'), 90 + i * 110));
+}
+
 function renderDetail(){
   const box = $('#detail');
   box.scrollTop = 0;
@@ -960,33 +1213,45 @@ function renderDetail(){
   if (!t){
     box.innerHTML =
       '<div class="empty-state">' +
-        '<div class="empty-icon">' + ICO_INBOX + '</div>' +
-        '<h3>Fila pronta para simulação</h3>' +
-        '<p>Envie uma mensagem pelo canal do cliente à esquerda para ver a triagem, o mascaramento LGPD e o rascunho aparecerem aqui.</p>' +
+        '<div class="empty-icon">' + ICO_SPARK + '</div>' +
+        '<h3>Pronto para testar a triagem</h3>' +
+        '<p>Clique em um cenário abaixo, digite uma dúvida livre (ex: <em>“Como me afilio?”</em>) ou use o botão <strong>Rodar demo guiada</strong> lá em cima.</p>' +
         '<div class="tour">' +
-          '<div class="tour-step"><code>RA-04</code><span>Dúvida básica de creator — deflexão imediata com link oficial.</span></div>' +
-          '<div class="tour-step"><code>RA-03</code><span>Saque + vitrine — roteado para Operações (KYC) e Comercial.</span></div>' +
-          '<div class="tour-step"><code>RA-05</code><span>Ameaça contestar no banco — sobe para P1 anti-chargeback.</span></div>' +
-          '<div class="tour-step"><code>LGPD</code><span>CPF, e-mail, telefone e nome ocultados antes da análise.</span></div>' +
+          '<div class="tour-step" data-idx="3"><code>RA-04</code><span>Dúvida básica de creator — deflexão imediata com link oficial.</span></div>' +
+          '<div class="tour-step" data-idx="2"><code>RA-03</code><span>Saque + vitrine — roteado para Operações (KYC) e Comercial.</span></div>' +
+          '<div class="tour-step" data-idx="4"><code>RA-05</code><span>Ameaça contestar no banco — sobe para P1 anti-chargeback.</span></div>' +
+          '<div class="tour-step" data-idx="5"><code>LGPD</code><span>CPF, e-mail, telefone e nome ocultados antes da análise.</span></div>' +
         '</div>' +
       '</div>';
+    box.querySelectorAll('.tour-step').forEach(el => {
+      el.onclick = () => submit(CASES[+el.dataset.idx]);
+    });
     return;
   }
 
   const lgpd = t.masks.length
-    ? 'LGPD: <b>' + t.masks.map(x => x.label + (x.n > 1 ? ' (' + x.n + 'x)' : '')).join(', ') + '</b> ocultado' + (t.masks.length > 1 ? 's' : '') + ' antes da análise.'
+    ? 'LGPD: <b>' + t.masks.map(x => x.label + (x.n > 1 ? ' (' + x.n + 'x)' : '')).join(', ') + '</b> ocultado' + (t.masks.length > 1 ? 's' : '') + ' antes da análise e do título da fila.'
     : 'LGPD: nenhum dado pessoal sensível detectado na mensagem.';
 
   let callout = '';
   if (t.cb.length){
     callout = '<div class="callout danger">' + ICO_SHIELD + '<div><b>Escudo Anti-Chargeback ativado.</b> Ticket movido para o topo da fila (P1). O cliente recebeu apenas confirmação de prioridade; a resposta depende de um analista.</div></div>';
   } else if (t.status === 'auto'){
-    callout = '<div class="callout info">' + ICO_INFO + '<div><b>Candidato a autoatendimento.</b> Links oficiais enviados ao cliente. Se ele confirmar que resolveu, o ticket não ocupa a fila humana.</div></div>';
+    callout = '<div class="callout info">' + ICO_INFO + '<div><b>Candidato a autoatendimento (FAQ).</b> Links oficiais enviados ao cliente. Se ele confirmar que resolveu, o ticket não ocupa a fila humana.</div></div>';
   } else if (t.escalated){
-    callout = '<div class="callout info">' + ICO_INFO + '<div><b>Escalado pelo cliente.</b> O guia não resolveu; o contexto já chegou resumido para o analista continuar sem retrabalho.</div></div>';
+    callout = '<div class="callout info">' + ICO_INFO + '<div><b>Escalado pelo cliente.</b> O guia não resolveu; o contexto chegou resumido para o analista continuar sem retrabalho.</div></div>';
   }
 
   const statusCls = (t.status === 'resolvido' || t.status === 'respondido') ? ' ok' : (t.status === 'fila' ? ' warn' : '');
+  const confCls = t.cb.length ? ' p1' : (t.confidence >= 80 ? ' high' : '');
+
+  const pipeHtml =
+    '<div class="pipeline">' +
+      '<div class="pipe-step ' + (t.masks.length ? 'is-blue' : 'is-ok') + '"><span class="pipe-dot">' + ICO_CHECK + '</span><span class="pipe-label">' + (t.masks.length ? 'LGPD (' + t.masks.length + ' masked)' : 'LGPD limpo') + '</span></div>' +
+      '<div class="pipe-step ' + (t.cb.length ? 'is-warn' : 'is-ok') + '"><span class="pipe-dot">' + ICO_CHECK + '</span><span class="pipe-label">' + (t.cb.length ? 'Risco P1 ativo' : 'Sem risco P1') + '</span></div>' +
+      '<div class="pipe-step is-ok"><span class="pipe-dot">' + ICO_CHECK + '</span><span class="pipe-label">Intenção ' + t.confidence + '%</span></div>' +
+      '<div class="pipe-step is-ok"><span class="pipe-dot">' + ICO_CHECK + '</span><span class="pipe-label">' + (t.guides.length ? t.guides.length + ' guia(s) KB' : 'Fila humana') + '</span></div>' +
+    '</div>';
 
   let action;
   if (t.status === 'fila'){
@@ -996,7 +1261,7 @@ function renderDetail(){
         '<div class="draft-bar"><span>Resposta sugerida com base na Central de Ajuda</span><span class="hitl-tag">Human-in-the-Loop · Revisão obrigatória</span></div>' +
         '<textarea id="draft">' + esc(t.draft) + '</textarea>' +
         '<div class="draft-actions">' +
-          '<small>Texto ancorado apenas nos guias oficiais. Edite livremente antes de enviar.</small>' +
+          '<small>Texto ancorado nos guias oficiais. Edite livremente antes de aprovar.</small>' +
           '<div class="btn-row"><button class="btn btn-ghost" id="discard">Descartar</button><button class="btn btn-primary" id="approve">Aprovar e enviar</button></div>' +
         '</div>' +
       '</div>';
@@ -1011,6 +1276,7 @@ function renderDetail(){
   }
 
   box.innerHTML =
+    pipeHtml +
     '<div class="d-top">' +
       '<div class="d-meta"><span class="prio p' + t.prio + '">P' + t.prio + '</span><span class="mono">#' + t.n + '</span><span>·</span><span class="mono">' + esc(t.ref) + '</span><span>·</span><span>' + t.time + '</span></div>' +
       '<span class="status-pill' + statusCls + '">' + esc(STATUS[t.status]) + '</span>' +
@@ -1018,7 +1284,7 @@ function renderDetail(){
     '<h3 class="d-title">' + esc(t.titulo) + '</h3>' +
     callout +
     '<div class="facts-grid">' +
-      '<div class="fact"><div class="fact-k">Perfil identificado</div><div class="fact-v">' + esc(t.persona) + '</div></div>' +
+      '<div class="fact"><div class="fact-k"><span>Perfil identificado</span><span>' + t.confidence + '% conf.</span></div><div class="fact-v">' + esc(t.persona) + '</div><div class="conf-bar"><div class="conf-fill' + confCls + '" style="width:' + t.confidence + '%"></div></div></div>' +
       '<div class="fact"><div class="fact-k">Fila destino</div><div class="fact-v">' + esc(t.fila) + '</div></div>' +
       '<div class="fact"><div class="fact-k">Próxima ação</div><div class="fact-v">' + esc(t.acao) + '</div></div>' +
       '<div class="fact"><div class="fact-k">Justificativa da triagem</div><div class="fact-v">' + esc(t.motivo) + '</div></div>' +
@@ -1027,7 +1293,7 @@ function renderDetail(){
       '<div class="legend">' +
         '<span><i style="background:#DBEAFE"></i>LGPD</span>' +
         '<span><i style="background:#FEE2E2"></i>Risco P1</span>' +
-        '<span><i style="background:#E6F5BE"></i>Palavra-chave</span>' +
+        '<span><i style="background:#E6F5BE"></i>Termo detectado</span>' +
       '</div>' +
     '</div>' +
     '<div class="quote-box">' + highlight(t) + '</div>' +
@@ -1040,13 +1306,20 @@ function renderDetail(){
       : '<div class="status-box">Nenhum guia da base cobre este assunto — encaminhado direto para leitura humana.</div>') +
     action;
 
+  animatePipeline(t.isNew);
+  t.isNew = false;
+
   const ap = $('#approve'), di = $('#discard');
   if (ap) ap.onclick = () => {
     t.draft = $('#draft').value; t.status = 'respondido';
     bubble('agent', 'Atendente · YouShop', linkify(t.draft));
     render();
+    toast('Resposta aprovada e enviada ao cliente');
   };
-  if (di) di.onclick = () => { t.status = 'descartado'; render(); };
+  if (di) di.onclick = () => {
+    t.status = 'descartado'; render();
+    toast('Rascunho descartado');
+  };
 }
 
 function render(){ renderKpis(); renderQueue(); renderDetail(); }
@@ -1055,9 +1328,28 @@ function resetAll(){
   tickets.length = 0;
   selected = null;
   seq = 1041;
+  prevKpi = [0, 0, 0, 0];
   chat.innerHTML = '';
   bubble('bot', 'Assistente de ajuda', 'Oi! Me conta o que aconteceu. Se a resposta já estiver na Central de Ajuda, mando o link na hora; se não, passo direto para a equipe certa.');
   render();
+}
+
+/* ---------------- Demo Guiada ---------------- */
+let demoRunning = false;
+function runDemo(){
+  if (demoRunning) return;
+  demoRunning = true;
+  const btn = $('#demoBtn');
+  btn.disabled = true;
+  resetAll();
+  toast('Executando demonstração guiada (3 cenários)…');
+  setTimeout(() => submit(CASES[3]), 450);   // RA-04 FAQ
+  setTimeout(() => submit(CASES[4]), 2300);  // RA-05 P1 Chargeback
+  setTimeout(() => {
+    submit(CASES[5]);                        // LGPD + P1
+    demoRunning = false;
+    btn.disabled = false;
+  }, 4300);
 }
 
 /* ---------------- Início ---------------- */
@@ -1076,7 +1368,8 @@ $('#send').onsubmit = e => {
 };
 $('#msg').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $('#send').requestSubmit(); } });
 $('#msg').addEventListener('input', e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 88) + 'px'; });
-$('#resetBtn').onclick = resetAll;
+$('#resetBtn').onclick = () => { resetAll(); toast('Simulação reiniciada'); };
+$('#demoBtn').onclick = runDemo;
 
 resetAll();
 </script>
