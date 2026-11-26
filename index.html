@@ -3,241 +3,678 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fila Inteligente · YouShop (protótipo)</title>
-<meta name="description" content="Protótipo de triagem de atendimento: separa urgência de dúvida simples, protege contra chargeback e oculta dados pessoais.">
+<title>Fila Inteligente · YouShop</title>
+<meta name="description" content="Protótipo interativo de triagem operacional e escudo anti-chargeback para o atendimento da YouShop.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --navy:#0B1F3A; --ink:#0F2942; --lime:#9BE000; --lime-ink:#4F7300; --blue:#4B74B8;
-  --bg:#F3F4F1; --panel:#FFFFFF; --soft:#F7F8F5; --line:#DFE2DB; --muted:#5E6B78;
-  --red:#B8321C; --red-bg:#FBECE8; --amber:#9A5B00; --amber-bg:#FCF1DE; --green:#3D7410; --green-bg:#EDF5E1;
-  --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+  --navy:#0B1F3A;
+  --navy-2:#122D52;
+  --ink:#0F172A;
+  --ink-2:#334155;
+  --muted:#64748B;
+  --muted-2:#94A3B8;
+  --lime:#9BE000;
+  --lime-soft:#F1FAD9;
+  --lime-ink:#3F6212;
+  --blue:#3B66B0;
+  --blue-soft:#EFF6FF;
+  --blue-line:#BFDBFE;
+
+  --canvas:#F5F7FA;
+  --surface:#FFFFFF;
+  --surface-2:#F8FAFC;
+  --line:#E2E8F0;
+  --line-strong:#CBD5E1;
+
+  --red:#DC2626;
+  --red-ink:#991B1B;
+  --red-soft:#FEF2F2;
+  --red-line:#FECACA;
+
+  --amber:#D97706;
+  --amber-ink:#92400E;
+  --amber-soft:#FFFBEB;
+  --amber-line:#FDE68A;
+
+  --green:#16A34A;
+  --green-ink:#166534;
+  --green-soft:#F0FDF4;
+  --green-line:#BBF7D0;
+
+  --shadow-sm:0 1px 2px rgba(15,23,42,.04), 0 1px 3px rgba(15,23,42,.03);
+  --shadow-md:0 4px 12px rgba(15,23,42,.05), 0 1px 3px rgba(15,23,42,.04);
+  --shadow-lg:0 12px 32px rgba(11,31,58,.08), 0 2px 6px rgba(11,31,58,.04);
+
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --display:'Plus Jakarta Sans','Inter',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
+  --r-sm:6px; --r-md:10px; --r-lg:14px;
 }
+
 *{box-sizing:border-box}
-html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
-a{color:var(--blue)}
-button{font:inherit;cursor:pointer}
-
-/* topo */
-.top{height:52px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px}
-.brand{display:flex;align-items:center;gap:10px;font-size:14px;color:#AFC0D3}
-.logo{font-weight:800;font-size:18px;letter-spacing:-.4px;color:#fff;display:flex;align-items:flex-end;gap:2px}
-.logo i{width:6px;height:6px;background:var(--lime);display:inline-block;margin-bottom:5px}
-.brand .sep{color:#3E5674}
-.tag{font-family:var(--mono);font-size:11px;color:var(--lime);border:1px solid #33506F;padding:1px 6px;border-radius:3px}
-.top nav{display:flex;gap:18px}
-.top nav a{color:#D5DFEA;text-decoration:none;font-size:13px}
-.top nav a:hover{color:#fff;text-decoration:underline}
-
-.intro{max-width:1320px;margin:0 auto;padding:18px 20px 14px;display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
-.intro h1{margin:0;font-size:20px;letter-spacing:-.3px}
-.intro p{margin:4px 0 0;color:var(--muted);max-width:720px}
-.intro .hint{font-size:12px;color:var(--muted);font-family:var(--mono)}
-
-/* layout principal */
-.app{max-width:1320px;margin:0 auto 28px;padding:0 20px;display:grid;grid-template-columns:380px 1fr;gap:14px;height:min(800px,calc(100vh - 150px));min-height:620px}
-.pane{background:var(--panel);border:1px solid var(--line);border-radius:8px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
-.pane-head{padding:11px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-.pane-head b{font-size:13px}
-.pane-head small{display:block;color:var(--muted);font-size:12px}
-
-/* canal do cliente */
-.chat{flex:1;overflow:auto;padding:14px;background:var(--soft);display:flex;flex-direction:column;gap:10px}
-.msg{max-width:88%;padding:9px 11px;border-radius:10px;font-size:13.5px;white-space:pre-wrap;word-wrap:break-word}
-.msg .who{display:block;font-size:11px;color:var(--muted);margin-bottom:2px;white-space:normal}
-.msg.bot{background:#fff;border:1px solid var(--line);align-self:flex-start;border-top-left-radius:3px}
-.msg.agent{background:#fff;border:1px solid var(--line);border-left:3px solid var(--lime);align-self:flex-start;border-top-left-radius:3px}
-.msg.user{background:var(--ink);color:#fff;align-self:flex-end;border-top-right-radius:3px}
-.msg.user .who{color:#9FB2C8;text-align:right}
-.msg.typing{color:var(--muted);font-style:italic}
-.guide{display:block;margin-top:8px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;text-decoration:none;color:var(--ink);white-space:normal;background:var(--soft)}
-.guide strong{display:block;font-size:13px;color:var(--blue)}
-.guide span{font-size:12.5px;color:var(--muted)}
-.actions-inline{display:flex;gap:6px;margin-top:9px;white-space:normal;flex-wrap:wrap}
-.btn-s{border:1px solid var(--line);background:#fff;border-radius:5px;padding:5px 10px;font-size:12.5px;color:var(--ink)}
-.btn-s:hover{border-color:var(--ink)}
-.btn-s[disabled]{opacity:.45;cursor:default}
-
-.composer{border-top:1px solid var(--line);padding:10px 12px 12px}
-.cases-label{font-size:11.5px;color:var(--muted);margin-bottom:6px}
-.cases{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
-.case{border:1px solid var(--line);background:#fff;border-radius:4px;padding:4px 8px;font-size:12px;color:var(--ink);text-align:left}
-.case:hover{border-color:var(--ink);background:var(--soft)}
-.case code{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-right:5px}
-.case.lgpd code{color:var(--blue)}
-form.send{display:flex;gap:6px}
-form.send textarea{flex:1;resize:none;border:1px solid var(--line);border-radius:6px;padding:8px 10px;font:inherit;font-size:13.5px;color:var(--ink);background:#fff}
-form.send textarea:focus{outline:2px solid var(--lime);outline-offset:-1px;border-color:transparent}
-form.send button{border:0;background:var(--ink);color:#fff;border-radius:6px;padding:0 14px;font-weight:600}
-form.send button:hover{background:#18395C}
-
-/* console */
-.kpis{display:flex;gap:0;font-size:12px;color:var(--muted)}
-.kpi{padding:0 14px;border-left:1px solid var(--line);display:flex;align-items:baseline;gap:6px}
-.kpi:first-child{border-left:0;padding-left:0}
-.kpi b{font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums}
-.kpi.red b{color:var(--red)}
-.kpi.green b{color:var(--lime-ink)}
-.ops-body{flex:1;display:grid;grid-template-columns:270px 1fr;min-height:0}
-.queue{border-right:1px solid var(--line);overflow:auto;background:var(--soft)}
-.queue-head{padding:9px 12px;font-size:11.5px;color:var(--muted);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;position:sticky;top:0;background:var(--soft)}
-.queue ol{list-style:none;margin:0;padding:0}
-.q{padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer;display:grid;grid-template-columns:auto 1fr;gap:2px 8px}
-.q:hover{background:#fff}
-.q.sel{background:#fff;box-shadow:inset 3px 0 0 var(--ink)}
-.q .p{grid-row:span 2;font-family:var(--mono);font-size:10.5px;font-weight:700;padding:1px 5px;border-radius:3px;height:fit-content;margin-top:2px}
-.q .t{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.q .s{font-size:11.5px;color:var(--muted)}
-.q.done .t{color:var(--muted)}
-.p1{background:var(--red-bg);color:var(--red)}
-.p2{background:var(--amber-bg);color:var(--amber)}
-.p3{background:var(--green-bg);color:var(--green)}
-.empty-q{padding:16px 12px;color:var(--muted);font-size:12.5px}
-
-.detail{overflow:auto;padding:18px 22px 26px}
-.empty{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;max-width:440px;margin:0 auto;color:var(--muted)}
-.empty h3{color:var(--ink);margin:0 0 6px;font-size:16px}
-.empty ol{padding-left:18px;margin:8px 0 0}
-.empty li{margin:3px 0}
-.d-meta{font-family:var(--mono);font-size:11.5px;color:var(--muted);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.badge{font-family:var(--mono);font-size:11px;font-weight:700;padding:2px 7px;border-radius:3px}
-.d-title{font-size:18px;margin:6px 0 14px;letter-spacing:-.2px;line-height:1.3}
-.alert{border-left:3px solid var(--red);background:var(--red-bg);padding:9px 12px;border-radius:0 6px 6px 0;margin-bottom:16px;font-size:13px}
-.alert b{color:var(--red)}
-.alert.info{border-color:var(--blue);background:#EDF2FA}
-.alert.info b{color:var(--blue)}
-dl.facts{display:grid;grid-template-columns:120px 1fr;gap:6px 14px;margin:0 0 18px;font-size:13px}
-dl.facts dt{color:var(--muted)}
-dl.facts dd{margin:0}
-h4{font-size:11.5px;font-weight:600;color:var(--muted);margin:18px 0 6px;text-transform:uppercase;letter-spacing:.5px}
-.quote{border:1px solid var(--line);border-radius:6px;padding:10px 12px;background:var(--soft);font-size:13.5px;white-space:pre-wrap}
-mark{background:none;color:inherit;border-radius:3px;padding:0 2px}
-mark.cb{background:#F7D4CC;color:#7F1D0E;font-weight:600}
-mark.kw{background:#E6F2C9;color:#33500A}
-mark.mask{background:#DCE6F5;color:#24467E;font-family:var(--mono);font-size:12px}
-.lgpd{font-size:12px;color:var(--muted);margin-top:6px}
-.lgpd b{color:var(--ink);font-weight:600}
-ul.guides{list-style:none;margin:0;padding:0;font-size:13px}
-ul.guides li{padding:5px 0;border-bottom:1px dashed var(--line)}
-ul.guides code{font-family:var(--mono);font-size:11px;color:var(--muted);margin-right:6px}
-textarea.draft{width:100%;min-height:210px;border:1px solid var(--line);border-radius:6px;padding:10px 12px;font:inherit;font-size:13px;line-height:1.5;color:var(--ink);resize:vertical}
-textarea.draft:focus{outline:2px solid var(--lime);outline-offset:-1px}
-textarea.draft[readonly]{background:var(--soft);color:var(--muted)}
-.draft-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}
-.draft-foot small{color:var(--muted);font-size:12px;max-width:420px}
-.btn{border:1px solid var(--ink);background:#fff;color:var(--ink);border-radius:6px;padding:7px 14px;font-weight:600;font-size:13px}
-.btn.primary{background:var(--ink);color:#fff}
-.btn.primary:hover{background:#18395C}
-.btn.ghost{border-color:var(--line);font-weight:500}
-.btn.ghost:hover{border-color:var(--ink)}
-.status{font-size:12.5px;padding:8px 10px;border-radius:6px;background:var(--soft);border:1px solid var(--line);color:var(--muted)}
-
-/* como funciona */
-.how{max-width:1320px;margin:0 auto;padding:0 20px 10px}
-.how-inner{border-top:1px solid var(--line);padding-top:22px;display:grid;grid-template-columns:minmax(0,640px) minmax(0,1fr);gap:40px}
-.how h2{font-size:16px;margin:0 0 10px}
-.how ol{margin:0;padding-left:20px}
-.how li{margin:0 0 8px;color:#2C3E52}
-.how p{color:#2C3E52;margin:0 0 10px}
-.how .note{font-size:13px;color:var(--muted)}
-footer{max-width:1320px;margin:0 auto;padding:18px 20px 34px;color:var(--muted);font-size:12px}
-
-@media (max-width:980px){
-  .app{grid-template-columns:1fr;height:auto}
-  .pane.user{height:600px}
-  .pane.ops{min-height:700px}
-  .ops-body{grid-template-columns:1fr;grid-template-rows:auto 1fr}
-  .queue{max-height:210px;border-right:0;border-bottom:1px solid var(--line)}
-  .how-inner{grid-template-columns:1fr;gap:10px}
-  .kpis{flex-wrap:wrap;row-gap:4px}
+html,body{margin:0;padding:0;scroll-behavior:smooth}
+body{
+  background:var(--canvas);
+  color:var(--ink);
+  font:14px/1.55 var(--sans);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
 }
-@media (max-width:560px){
-  .top nav a:first-child{display:none}
-  .brand .tag{display:none}
-  dl.facts{grid-template-columns:1fr;gap:0}
-  dl.facts dd{margin-bottom:8px}
-  .kpi{padding:0 8px}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+button{font:inherit;cursor:pointer}
+svg{display:inline-block;vertical-align:middle;flex-shrink:0}
+
+/* ---------- Header ---------- */
+.topbar{
+  position:sticky;top:0;z-index:30;
+  height:60px;
+  background:var(--navy);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  color:#fff;
+}
+.topbar-inner{
+  max-width:1380px;height:100%;margin:0 auto;padding:0 24px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{
+  font-family:var(--display);font-weight:800;font-size:19px;letter-spacing:-.5px;color:#fff;
+  display:inline-flex;align-items:baseline;gap:2px;
+}
+.logo .dot{
+  width:7px;height:7px;border-radius:2px;background:var(--lime);display:inline-block;margin-left:1px;
+}
+.brand-div{width:1px;height:18px;background:rgba(255,255,255,.16)}
+.brand-sub{font-size:13.5px;font-weight:500;color:#CBD5E1;letter-spacing:-.1px}
+.pill-live{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11.5px;font-weight:600;color:var(--lime);
+  background:rgba(155,224,0,.1);border:1px solid rgba(155,224,0,.28);
+  padding:3px 9px;border-radius:999px;
+}
+.pill-live i{
+  width:6px;height:6px;border-radius:50%;background:var(--lime);
+  box-shadow:0 0 0 3px rgba(155,224,0,.22);
+}
+.nav{display:flex;align-items:center;gap:6px}
+.nav a{
+  color:#CBD5E1;font-size:13px;font-weight:500;
+  padding:7px 12px;border-radius:var(--r-sm);transition:background .15s,color .15s;
+  text-decoration:none;display:inline-flex;align-items:center;gap:6px;
+}
+.nav a:hover{background:rgba(255,255,255,.08);color:#fff;text-decoration:none}
+.nav a.nav-cta{
+  background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.14);
+}
+.nav a.nav-cta:hover{background:rgba(255,255,255,.16)}
+
+/* ---------- Hero strip ---------- */
+.hero{
+  max-width:1380px;margin:0 auto;padding:24px 24px 18px;
+  display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;
+}
+.hero-copy{max-width:740px}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;
+  color:var(--blue);margin-bottom:6px;
+}
+.hero h1{
+  margin:0;font-family:var(--display);font-weight:700;font-size:24px;
+  letter-spacing:-.45px;line-height:1.2;color:var(--navy);
+}
+.hero p{margin:6px 0 0;color:var(--muted);font-size:14px;line-height:1.55}
+.hero-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn-reset{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--surface);border:1px solid var(--line);color:var(--ink-2);
+  padding:7px 12px;border-radius:var(--r-sm);font-size:12.5px;font-weight:500;
+  box-shadow:var(--shadow-sm);transition:border-color .15s,color .15s,background .15s;
+}
+.btn-reset:hover{border-color:var(--line-strong);color:var(--ink);background:var(--surface-2)}
+
+/* ---------- Workspace grid ---------- */
+.workspace{
+  max-width:1380px;margin:0 auto 36px;padding:0 24px;
+  display:grid;grid-template-columns:410px 1fr;gap:18px;
+  height:min(820px,calc(100vh - 168px));min-height:660px;
+}
+.card-shell{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:var(--shadow-md);
+  display:flex;flex-direction:column;min-height:0;overflow:hidden;
+}
+
+/* ---------- Left: Customer Channel ---------- */
+.chat-head{
+  background:var(--navy);color:#fff;padding:14px 16px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.chat-head-left{display:flex;align-items:center;gap:11px}
+.avatar{
+  width:36px;height:36px;border-radius:10px;background:var(--navy-2);
+  border:1px solid rgba(155,224,0,.35);color:var(--lime);
+  display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:15px;
+  position:relative;
+}
+.avatar::after{
+  content:'';position:absolute;right:-2px;bottom:-2px;
+  width:10px;height:10px;border-radius:50%;background:var(--lime);border:2px solid var(--navy);
+}
+.chat-head h2{margin:0;font-family:var(--display);font-size:14.5px;font-weight:700;letter-spacing:-.2px}
+.chat-head small{display:block;font-size:12px;color:#94A3B8}
+.channel-pill{
+  font-size:11px;font-weight:600;color:#CBD5E1;
+  background:rgba(255,255,255,.08);padding:4px 9px;border-radius:999px;
+}
+
+.chat-feed{
+  flex:1;overflow-y:auto;padding:16px;background:var(--surface-2);
+  display:flex;flex-direction:column;gap:12px;
+}
+.chat-feed::-webkit-scrollbar,.queue-list::-webkit-scrollbar,.detail-pane::-webkit-scrollbar{width:6px}
+.chat-feed::-webkit-scrollbar-thumb,.queue-list::-webkit-scrollbar-thumb,.detail-pane::-webkit-scrollbar-thumb{
+  background:#CBD5E1;border-radius:99px;
+}
+@keyframes popIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.bubble{
+  max-width:89%;padding:11px 14px;border-radius:14px;font-size:13.5px;line-height:1.5;
+  white-space:pre-wrap;word-wrap:break-word;animation:popIn .18s ease-out;
+}
+.bubble-meta{
+  display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;
+  color:var(--muted);margin-bottom:4px;white-space:normal;
+}
+.bubble.bot{
+  background:var(--surface);border:1px solid var(--line);color:var(--ink);
+  align-self:flex-start;border-top-left-radius:4px;box-shadow:var(--shadow-sm);
+}
+.bubble.agent{
+  background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--lime);
+  color:var(--ink);align-self:flex-start;border-top-left-radius:4px;box-shadow:var(--shadow-sm);
+}
+.bubble.agent .bubble-meta{color:var(--lime-ink)}
+.bubble.user{
+  background:var(--navy);color:#F8FAFC;
+  align-self:flex-end;border-top-right-radius:4px;box-shadow:var(--shadow-sm);
+}
+.bubble.user .bubble-meta{color:#94A3B8;justify-content:flex-end}
+.bubble.typing{color:var(--muted);font-style:italic;padding:9px 14px}
+
+.guide-card{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
+  margin-top:9px;padding:10px 12px;border-radius:var(--r-md);
+  background:var(--surface-2);border:1px solid var(--line);
+  color:var(--ink);text-decoration:none;white-space:normal;
+  transition:border-color .15s,background .15s,transform .12s;
+}
+.guide-card:hover{border-color:var(--blue);background:#fff;text-decoration:none;transform:translateY(-1px)}
+.guide-card strong{display:block;font-size:13px;font-weight:600;color:var(--blue);margin-bottom:2px}
+.guide-card span{display:block;font-size:12px;color:var(--muted);line-height:1.45}
+.guide-card svg{color:var(--muted-2);margin-top:2px}
+.guide-card:hover svg{color:var(--blue)}
+
+.quick-replies{display:flex;gap:7px;margin-top:11px;white-space:normal;flex-wrap:wrap}
+.qr-btn{
+  border:1px solid var(--line-strong);background:#fff;color:var(--ink);
+  border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;
+  transition:all .15s;
+}
+.qr-btn:hover:not([disabled]){border-color:var(--navy);background:var(--navy);color:#fff}
+.qr-btn.qr-ok:hover:not([disabled]){border-color:var(--green);background:var(--green);color:#fff}
+.qr-btn[disabled]{opacity:.45;cursor:default}
+
+.composer-wrap{
+  border-top:1px solid var(--line);background:var(--surface);padding:12px 14px 14px;
+}
+.scenarios-head{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;
+}
+.scenarios-head span{font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:.1px}
+.scenarios-head small{font-size:11px;color:var(--muted-2)}
+.scenarios{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:11px}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;
+  border:1px solid var(--line);background:var(--surface-2);color:var(--ink-2);
+  border-radius:8px;padding:5px 9px;font-size:12px;font-weight:500;
+  transition:all .14s;text-align:left;
+}
+.chip:hover{border-color:var(--navy);background:#fff;color:var(--navy);box-shadow:var(--shadow-sm)}
+.chip .code{
+  font-family:var(--mono);font-size:10.5px;font-weight:600;
+  padding:1px 5px;border-radius:4px;background:#E2E8F0;color:var(--ink-2);
+}
+.chip.is-p1 .code{background:var(--red-soft);color:var(--red-ink)}
+.chip.is-lgpd .code{background:var(--blue-soft);color:var(--blue)}
+.chip.is-faq .code{background:var(--green-soft);color:var(--green-ink)}
+
+.input-box{
+  display:flex;align-items:flex-end;gap:8px;
+  border:1px solid var(--line-strong);border-radius:var(--r-md);
+  padding:6px 6px 6px 12px;background:#fff;
+  transition:border-color .15s,box-shadow .15s;
+}
+.input-box:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(11,31,58,.08)}
+.input-box textarea{
+  flex:1;border:0;outline:0;resize:none;padding:4px 0;
+  font:inherit;font-size:13.5px;color:var(--ink);background:transparent;
+  max-height:88px;
+}
+.input-box textarea::placeholder{color:var(--muted-2)}
+.btn-send{
+  width:36px;height:36px;border-radius:8px;border:0;
+  background:var(--navy);color:#fff;
+  display:grid;place-items:center;transition:background .15s,transform .1s;
+}
+.btn-send:hover{background:var(--navy-2)}
+.btn-send:active{transform:scale(.96)}
+
+/* ---------- Right: Ops Console ---------- */
+.ops-head{
+  padding:14px 20px;border-bottom:1px solid var(--line);background:var(--surface);
+  display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+}
+.ops-title h2{margin:0;font-family:var(--display);font-size:15px;font-weight:700;color:var(--navy)}
+.ops-title small{display:block;font-size:12px;color:var(--muted)}
+
+.kpi-strip{display:flex;gap:8px;flex-wrap:wrap}
+.kpi-card{
+  display:flex;align-items:baseline;gap:7px;
+  padding:6px 12px;border-radius:var(--r-sm);
+  background:var(--surface-2);border:1px solid var(--line);
+}
+.kpi-card b{
+  font-family:var(--display);font-size:18px;font-weight:700;
+  color:var(--navy);font-variant-numeric:tabular-nums;line-height:1;
+}
+.kpi-card span{font-size:11.5px;font-weight:500;color:var(--muted)}
+.kpi-card.kpi-red{background:var(--red-soft);border-color:var(--red-line)}
+.kpi-card.kpi-red b{color:var(--red)}
+.kpi-card.kpi-green{background:var(--lime-soft);border-color:#D9F099}
+.kpi-card.kpi-green b{color:var(--lime-ink)}
+
+.ops-grid{flex:1;display:grid;grid-template-columns:280px 1fr;min-height:0}
+
+/* Queue sidebar */
+.queue-col{
+  border-right:1px solid var(--line);background:var(--surface-2);
+  display:flex;flex-direction:column;min-height:0;
+}
+.queue-bar{
+  padding:10px 14px;border-bottom:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;
+}
+.queue-list{list-style:none;margin:0;padding:8px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:5px}
+.q-item{
+  padding:10px 11px;border-radius:var(--r-md);cursor:pointer;
+  border:1px solid transparent;background:transparent;
+  display:grid;grid-template-columns:auto 1fr;gap:3px 9px;align-items:start;
+  transition:background .12s,border-color .12s,box-shadow .12s;
+}
+.q-item:hover{background:#fff;border-color:var(--line)}
+.q-item.active{
+  background:#fff;border-color:var(--line-strong);
+  box-shadow:var(--shadow-sm);position:relative;
+}
+.q-item.active::before{
+  content:'';position:absolute;left:-1px;top:8px;bottom:8px;width:3px;
+  border-radius:0 3px 3px 0;background:var(--navy);
+}
+.q-item.is-p1.active::before{background:var(--red)}
+.q-item .q-title{
+  font-size:13px;font-weight:600;color:var(--ink);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.q-item.done .q-title{color:var(--muted);font-weight:500}
+.q-item .q-sub{
+  grid-column:2;font-size:11.5px;color:var(--muted);
+  display:flex;align-items:center;gap:6px;
+}
+.q-empty{
+  padding:24px 14px;text-align:center;color:var(--muted);font-size:12.5px;
+}
+
+/* Priority badges */
+.prio{
+  font-family:var(--mono);font-size:10.5px;font-weight:700;
+  padding:2px 6px;border-radius:5px;line-height:1.3;display:inline-flex;align-items:center;gap:4px;
+}
+.prio.p1{background:var(--red-soft);color:var(--red-ink);border:1px solid var(--red-line)}
+.prio.p2{background:var(--amber-soft);color:var(--amber-ink);border:1px solid var(--amber-line)}
+.prio.p3{background:var(--green-soft);color:var(--green-ink);border:1px solid var(--green-line)}
+
+/* Detail pane */
+.detail-pane{overflow-y:auto;padding:22px 26px 28px;background:var(--surface)}
+
+.empty-state{
+  height:100%;display:flex;flex-direction:column;justify-content:center;
+  max-width:460px;margin:0 auto;padding:16px 0;
+}
+.empty-icon{
+  width:44px;height:44px;border-radius:12px;background:var(--surface-2);
+  border:1px solid var(--line);color:var(--navy);
+  display:grid;place-items:center;margin-bottom:14px;
+}
+.empty-state h3{margin:0 0 6px;font-family:var(--display);font-size:17px;color:var(--navy)}
+.empty-state p{margin:0 0 16px;color:var(--muted);font-size:13.5px}
+.tour{display:grid;gap:8px}
+.tour-step{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;
+  border-radius:var(--r-md);background:var(--surface-2);border:1px solid var(--line);
+  font-size:12.5px;color:var(--ink-2);
+}
+.tour-step code{
+  font-family:var(--mono);font-size:11px;font-weight:600;
+  padding:2px 6px;border-radius:4px;background:#fff;border:1px solid var(--line);color:var(--navy);
+  min-width:46px;text-align:center;
+}
+
+.d-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.d-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.d-meta .mono{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);font-weight:500}
+.status-pill{
+  font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;
+  background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2);
+}
+.status-pill.ok{background:var(--green-soft);border-color:var(--green-line);color:var(--green-ink)}
+.status-pill.warn{background:var(--amber-soft);border-color:var(--amber-line);color:var(--amber-ink)}
+
+.d-title{
+  margin:0 0 16px;font-family:var(--display);font-size:19px;font-weight:700;
+  color:var(--navy);letter-spacing:-.3px;line-height:1.3;
+}
+
+.callout{
+  display:flex;align-items:flex-start;gap:11px;
+  padding:12px 14px;border-radius:var(--r-md);margin-bottom:18px;font-size:13px;line-height:1.5;
+}
+.callout.danger{background:var(--red-soft);border:1px solid var(--red-line);color:var(--red-ink)}
+.callout.danger svg{color:var(--red);margin-top:1px}
+.callout.info{background:var(--blue-soft);border:1px solid var(--blue-line);color:#1E3A8A}
+.callout.info svg{color:var(--blue);margin-top:1px}
+.callout b{font-weight:700}
+
+.facts-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:20px;
+}
+.fact{
+  padding:11px 13px;border-radius:var(--r-md);
+  background:var(--surface-2);border:1px solid var(--line);
+}
+.fact-k{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.45px;color:var(--muted);margin-bottom:3px}
+.fact-v{font-size:13px;font-weight:500;color:var(--ink);line-height:1.45}
+.fact.full{grid-column:1 / -1}
+
+.sec-head{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin:20px 0 8px;flex-wrap:wrap;
+}
+.sec-head h4{
+  margin:0;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.55px;color:var(--muted);
+}
+.legend{display:flex;gap:10px;font-size:11px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:4px}
+.legend i{width:8px;height:8px;border-radius:2px;display:inline-block}
+
+.quote-box{
+  border:1px solid var(--line);border-radius:var(--r-md);
+  padding:13px 15px;background:var(--surface-2);font-size:13.5px;line-height:1.6;
+  color:var(--ink);white-space:pre-wrap;
+}
+mark{background:none;color:inherit;border-radius:4px;padding:1px 4px}
+mark.cb{background:#FEE2E2;color:#991B1B;font-weight:600}
+mark.kw{background:var(--lime-soft);color:var(--lime-ink);font-weight:500}
+mark.mask{background:#DBEAFE;color:#1D4ED8;font-family:var(--mono);font-size:12px;font-weight:600}
+
+.lgpd-bar{
+  display:flex;align-items:center;gap:7px;margin-top:8px;
+  font-size:12px;color:var(--muted);
+}
+.lgpd-bar svg{color:var(--blue)}
+.lgpd-bar b{color:var(--ink);font-weight:600}
+
+.guides-list{display:grid;gap:8px}
+.guide-row{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:9px 12px;border-radius:var(--r-md);border:1px solid var(--line);
+  background:#fff;transition:border-color .15s,background .15s;text-decoration:none;
+}
+.guide-row:hover{border-color:var(--blue);background:var(--surface-2);text-decoration:none}
+.guide-row-left{display:flex;align-items:center;gap:9px;min-width:0}
+.guide-row code{
+  font-family:var(--mono);font-size:11px;font-weight:600;
+  color:var(--navy);background:var(--surface-2);border:1px solid var(--line);
+  padding:2px 6px;border-radius:4px;
+}
+.guide-row span{font-size:13px;font-weight:500;color:var(--blue);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.guide-row svg{color:var(--muted-2)}
+
+/* Draft editor */
+.draft-box{
+  border:1px solid var(--line-strong);border-radius:var(--r-md);overflow:hidden;background:#fff;
+  box-shadow:var(--shadow-sm);
+}
+.draft-bar{
+  padding:9px 13px;background:var(--surface-2);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
+  font-size:12px;font-weight:600;color:var(--ink-2);
+}
+.hitl-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:600;color:var(--lime-ink);
+  background:var(--lime-soft);border:1px solid #D9F099;
+  padding:2px 8px;border-radius:999px;
+}
+.draft-box textarea{
+  width:100%;min-height:190px;border:0;outline:0;resize:vertical;
+  padding:13px 15px;font:inherit;font-size:13px;line-height:1.58;color:var(--ink);
+  display:block;
+}
+.draft-box textarea[readonly]{background:var(--surface-2);color:var(--muted)}
+.draft-actions{
+  padding:10px 13px;background:var(--surface-2);border-top:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+}
+.draft-actions small{font-size:12px;color:var(--muted);max-width:360px}
+.btn-row{display:flex;gap:8px}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  border-radius:8px;padding:8px 15px;font-size:13px;font-weight:600;
+  border:1px solid transparent;transition:all .15s;
+}
+.btn-primary{background:var(--navy);color:#fff}
+.btn-primary:hover{background:var(--navy-2)}
+.btn-ghost{background:#fff;border-color:var(--line-strong);color:var(--ink-2)}
+.btn-ghost:hover{border-color:var(--ink);color:var(--ink)}
+
+.status-box{
+  padding:11px 13px;border-radius:var(--r-md);background:var(--surface-2);
+  border:1px solid var(--line);font-size:13px;color:var(--ink-2);
+}
+
+/* ---------- Architecture / How it works ---------- */
+.how{max-width:1380px;margin:0 auto;padding:12px 24px 16px}
+.how-header{margin-bottom:18px}
+.how-header h2{margin:0;font-family:var(--display);font-size:19px;font-weight:700;color:var(--navy);letter-spacing:-.3px}
+.how-header p{margin:4px 0 0;color:var(--muted);font-size:13.5px}
+.steps-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:16px}
+.step-card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
+  padding:16px;box-shadow:var(--shadow-sm);
+}
+.step-num{
+  font-family:var(--mono);font-size:11px;font-weight:700;color:var(--navy);
+  background:var(--lime);display:inline-block;padding:2px 7px;border-radius:4px;margin-bottom:10px;
+}
+.step-card h3{margin:0 0 6px;font-family:var(--display);font-size:14.5px;font-weight:700;color:var(--navy)}
+.step-card p{margin:0;font-size:13px;color:var(--muted);line-height:1.55}
+
+.limits-card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
+  padding:16px 20px;box-shadow:var(--shadow-sm);
+  display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;
+}
+.limits-card strong{display:block;font-family:var(--display);font-size:14px;color:var(--navy);margin-bottom:3px}
+.limits-card p{margin:0;font-size:13px;color:var(--muted);max-width:820px;line-height:1.55}
+.limits-card code{
+  font-family:var(--mono);font-size:12px;background:var(--surface-2);
+  border:1px solid var(--line);padding:1px 5px;border-radius:4px;color:var(--navy);
+}
+
+footer{
+  max-width:1380px;margin:0 auto;padding:20px 24px 40px;
+  border-top:1px solid var(--line);margin-top:20px;
+  display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+  color:var(--muted);font-size:12px;
+}
+
+@media (max-width:1080px){
+  .workspace{grid-template-columns:1fr;height:auto}
+  .card-shell.user{height:620px}
+  .card-shell.ops{min-height:740px}
+  .ops-grid{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .queue-col{max-height:220px;border-right:0;border-bottom:1px solid var(--line)}
+  .steps-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:640px){
+  .topbar-inner,.hero,.workspace,.how,footer{padding-left:16px;padding-right:16px}
+  .pill-live,.brand-div,.brand-sub{display:none}
+  .facts-grid,.steps-grid{grid-template-columns:1fr}
+  .detail-pane{padding:16px}
 }
 </style>
 </head>
 <body>
 
-<header class="top">
-  <div class="brand">
-    <span class="logo">youshop<i></i></span>
-    <span class="sep">/</span>
-    <span>fila inteligente</span>
-    <span class="tag">protótipo</span>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="logo">youshop<span class="dot"></span></span>
+      <span class="brand-div"></span>
+      <span class="brand-sub">Fila Inteligente</span>
+      <span class="pill-live"><i></i>Protótipo interativo</span>
+    </div>
+    <nav class="nav">
+      <a href="#como">Arquitetura</a>
+      <a class="nav-cta" href="https://github.com/jcminozzi/fila-inteligente-youshop" target="_blank" rel="noopener">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+        GitHub
+      </a>
+    </nav>
   </div>
-  <nav>
-    <a href="#como">Como funciona</a>
-    <a href="https://github.com/jcminozzi/fila-inteligente-youshop" target="_blank" rel="noopener">Código no GitHub</a>
-  </nav>
 </header>
 
-<div class="intro">
-  <div>
-    <h1>Triagem antes da fila do WhatsApp</h1>
-    <p>À esquerda, o que o cliente vê ao pedir ajuda no app. À direita, o que chega para o time de Operações: prioridade, time certo, dados pessoais ocultos e um rascunho de resposta para revisar.</p>
+<section class="hero">
+  <div class="hero-copy">
+    <div class="eyebrow">Desafio de Inovação · Estágio YouShop 2027</div>
+    <h1>Triagem operacional antes da fila do WhatsApp</h1>
+    <p>Simule uma mensagem à esquerda e veja em tempo real o que chega para Operações: escudo anti-chargeback (P1), mascaramento LGPD, roteamento de fila e rascunho ancorado na Central de Ajuda.</p>
   </div>
-  <span class="hint">clique em um caso real para começar</span>
-</div>
+  <div class="hero-actions">
+    <button class="btn-reset" id="resetBtn" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+      Limpar simulação
+    </button>
+  </div>
+</section>
 
-<main class="app">
+<main class="workspace">
   <!-- Canal do cliente -->
-  <section class="pane user" aria-label="Canal do cliente">
-    <div class="pane-head">
-      <div><b>Canal do cliente</b><small>ajuda dentro do app</small></div>
+  <section class="card-shell user" aria-label="Canal do cliente">
+    <div class="chat-head">
+      <div class="chat-head-left">
+        <div class="avatar">y</div>
+        <div>
+          <h2>Ajuda YouShop</h2>
+          <small>Experiência do cliente no app</small>
+        </div>
+      </div>
+      <span class="channel-pill">In-App</span>
     </div>
-    <div class="chat" id="chat" aria-live="polite"></div>
-    <div class="composer">
-      <div class="cases-label">Casos reais do Reclame Aqui (nov/2026, sem nomes)</div>
-      <div class="cases" id="cases"></div>
-      <form class="send" id="send">
-        <textarea id="msg" rows="2" placeholder="Ou escreva sua própria mensagem…"></textarea>
-        <button type="submit">Enviar</button>
+
+    <div class="chat-feed" id="chat" aria-live="polite"></div>
+
+    <div class="composer-wrap">
+      <div class="scenarios-head">
+        <span>Testar com casos reais (Reclame Aqui · nov/2026)</span>
+        <small>clique para enviar</small>
+      </div>
+      <div class="scenarios" id="cases"></div>
+      <form class="input-box" id="send">
+        <textarea id="msg" rows="1" placeholder="Ou digite qualquer mensagem de teste…"></textarea>
+        <button class="btn-send" type="submit" aria-label="Enviar mensagem">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+        </button>
       </form>
     </div>
   </section>
 
-  <!-- Console interno -->
-  <section class="pane ops" aria-label="Console de Operações">
-    <div class="pane-head">
-      <div><b>Console de Operações</b><small>visão interna do time</small></div>
-      <div class="kpis" id="kpis"></div>
+  <!-- Console de Operações -->
+  <section class="card-shell ops" aria-label="Console de Operações">
+    <div class="ops-head">
+      <div class="ops-title">
+        <h2>Console de Operações</h2>
+        <small>Visão interna do time de triagem e atendimento</small>
+      </div>
+      <div class="kpi-strip" id="kpis"></div>
     </div>
-    <div class="ops-body">
-      <aside class="queue">
-        <div class="queue-head"><span>Fila</span><span id="qinfo">0 tickets</span></div>
-        <ol id="queue"></ol>
+
+    <div class="ops-grid">
+      <aside class="queue-col">
+        <div class="queue-bar">
+          <span>Fila priorizada</span>
+          <span id="qinfo">0 tickets</span>
+        </div>
+        <ol class="queue-list" id="queue"></ol>
       </aside>
-      <div class="detail" id="detail"></div>
+      <div class="detail-pane" id="detail"></div>
     </div>
   </section>
 </main>
 
 <section class="how" id="como">
-  <div class="how-inner">
+  <div class="how-header">
+    <h2>Como a camada de triagem decide</h2>
+    <p>Quatro regras simples executadas antes de qualquer mensagem cair na fila humana.</p>
+  </div>
+  <div class="steps-grid">
+    <article class="step-card">
+      <span class="step-num">01 · LGPD</span>
+      <h3>Dados pessoais saem antes</h3>
+      <p>CPF, e-mail, telefone e nome próprio viram marcadores antes da análise. Nem o console nem uma eventual LLM enxergam o dado bruto.</p>
+    </article>
+    <article class="step-card">
+      <span class="step-num">02 · P1</span>
+      <h3>Escudo anti-chargeback</h3>
+      <p>Menções a contestar no banco, estorno no cartão, golpe ou fraude sobem automaticamente para o topo da fila humana, sem resposta automática.</p>
+    </article>
+    <article class="step-card">
+      <span class="step-num">03 · ROTA</span>
+      <h3>Direto para o time certo</h3>
+      <p>Saque e vitrine vão para Operações (KYC) e Comercial; afiliação parada vai para Onboarding; pedido e reembolso vão para Atendimento ao Comprador.</p>
+    </article>
+    <article class="step-card">
+      <span class="step-num">04 · FAQ</span>
+      <h3>Deflexão com saída humana</h3>
+      <p>Dúvidas já documentadas recebem o link oficial na hora. Se o cliente clicar em “Não resolveu”, o caso entra na fila com o resumo pronto.</p>
+    </article>
+  </div>
+  <div class="limits-card">
     <div>
-      <h2>Como a triagem decide</h2>
-      <ol>
-        <li><b>Dados pessoais saem primeiro.</b> CPF, e-mail, telefone e nome viram marcadores antes de qualquer análise. O console nunca mostra o dado original.</li>
-        <li><b>Risco de chargeback vai para o topo.</b> Se a mensagem fala em contestar no banco, estorno no cartão, golpe ou fraude, o ticket vira P1 e nada é respondido automaticamente.</li>
-        <li><b>Cada caso cai no time certo.</b> Saque e vitrine vão para Operações e Comercial; afiliação parada vai para Onboarding; pedido e reembolso vão para o Atendimento ao Comprador. O rascunho usa só o texto dos guias oficiais.</li>
-        <li><b>Dúvida simples recebe o guia na hora.</b> Se o cliente responder que não resolveu, o caso entra na fila humana com o resumo pronto, sem precisar explicar de novo.</li>
-      </ol>
-    </div>
-    <div>
-      <h2>O que fica de fora, de propósito</h2>
-      <p>A triagem não libera saque, não aprova cadastro e não envia resposta em caso sensível sem um analista aprovar. Ela organiza a fila e adianta o trabalho; quem decide é o time.</p>
-      <p class="note">Nesta versão a classificação é feita por regras e palavras-chave, rodando inteira no navegador. O script <code>triador_youshop.py</code> no repositório faz a mesma triagem em lote e, se configurado, usa o Gemini só para reescrever o rascunho a partir do texto já anonimizado.</p>
+      <strong>Limites claros: humano sempre decide</strong>
+      <p>A triagem não libera saque, não aprova cadastro e não envia resposta em casos sensíveis sem aprovação de um analista. Esta página roda 100% no navegador com regras auditáveis; o script <code>triador_youshop.py</code> no repositório replica a mesma lógica em lote e aceita refinamento opcional com Gemini sobre o texto já anonimizado.</p>
     </div>
   </div>
 </section>
 
 <footer>
-  Protótipo de João Carlos Minozzi para o Desafio de Inovação, Programa de Estágio YouShop 2027 (Operações · Automação e IA).
-  Projeto independente, sem vínculo oficial com a YouShop. Links apontam para a Central de Ajuda pública (ajuda.youshop.co) e a Área de Compras.
+  <span>Protótipo desenvolvido por <strong>João Carlos Minozzi</strong> · Desafio de Inovação, Programa de Estágio YouShop 2027 (Operações · Automação e IA).</span>
+  <span>Projeto independente, sem vínculo oficial com a YouShop.</span>
 </footer>
 
 <script>
@@ -248,16 +685,16 @@ const KB = [
     resumo:"No app YouShop Creators, em 'Meu link na Bio' ou na aba 'Afiliações', escolha o produto aprovado e gere seu link exclusivo e rastreável (2YOU)." },
   { id:'KB-02', titulo:'Como cadastrar minha rede social', url:'https://ajuda.youshop.co/',
     kw:['rede social','redes sociais','instagram','tiktok','perfil','vitrine','aceitam'],
-    resumo:'Em Perfil > Redes Sociais, adicione seus canais ativos. As marcas olham essas redes antes de aprovar pedidos na Vitrine.' },
+    resumo:'Em Perfil > Redes Sociais, adicione seus canais ativos. As marcas avaliam essas redes antes de aprovar pedidos na Vitrine.' },
   { id:'KB-03', titulo:'Como validar sua conta (KYC e saque)', url:'https://ajuda.youshop.co/',
     kw:['saque','sacar','validação','validar','cpf','documento','rg','carteira','bloqueado','comissão'],
-    resumo:'Dá para se afiliar e vender normalmente, mas o saque das comissões na Carteira só é liberado depois da validação de identidade (documento oficial e CPF) no Perfil.' },
+    resumo:'É possível se afiliar e vender normalmente, mas o saque das comissões na Carteira só é liberado após a validação de identidade (documento oficial e CPF) no Perfil.' },
   { id:'KB-04', titulo:'Como solicitar e acompanhar uma afiliação', url:'https://ajuda.youshop.co/',
     kw:['afiliação','afiliei','retorno','em análise','aprovação','marca','vitrine'],
     resumo:"Em 'Minhas Afiliações' aparecem os status Aprovadas, Em análise e Reprovadas. Marcas com aprovação manual avaliam o perfil antes de liberar o link." },
   { id:'KB-05', titulo:'Reembolso de produto e acompanhamento do pedido', url:'https://customer.youshop.com.br/login',
     kw:['reembolso','cancelado','cancelar','estorno','prazo','comprovante','suplemento'],
-    resumo:'Status da compra e comprovante de estorno ficam na Área de Compras, com o e-mail usado no pedido. Depois de aprovado, o prazo do crédito depende da operadora do cartão ou meio de pagamento.' },
+    resumo:'Status da compra e comprovante de estorno ficam na Área de Compras, com o e-mail usado no pedido. Após aprovado, o prazo do crédito depende da operadora do cartão ou meio de pagamento.' },
   { id:'KB-06', titulo:'Pedido, e-mail de confirmação e papel da YouShop', url:'https://customer.youshop.com.br/login',
     kw:['e-mail','confirmação','pedido','rastrear','rastreio','entrega','vendedor','compra'],
     resumo:'A YouShop processa o pagamento; o envio e o rastreio ficam com o vendedor do produto. Mesmo sem o e-mail de confirmação, a compra aparece na Área de Compras.' }
@@ -265,22 +702,22 @@ const KB = [
 
 /* ---------------- Casos de teste ---------------- */
 const CASES = [
-  { ref:'RA-01', label:'Prazo de reembolso',
+  { ref:'RA-01', label:'Prazo de reembolso', kind:'',
     titulo:'Prazo e funcionamento do reembolso de um suplemento cancelado',
     msg:'Boa tarde, tudo bem? Minha tia realizou uma compra, mas precisou cancelar e solicitar o reembolso referente a compra de um suplemento. Qual é o prazo para a solicitação ser concluída? E como funciona o processo de reembolso?' },
-  { ref:'RA-02', label:'Afiliação sem retorno',
+  { ref:'RA-02', label:'Afiliação sem retorno', kind:'',
     titulo:'Sem retorno sobre a afiliação feita no dia 30',
     msg:'Oi, tudo bem? Me afiliei a uma marca no dia 30 e ainda não tive retorno sobre. Quero saber se aconteceu alguma coisa e como podemos resolver isso. Aguardo retorno com urgência e preferencialmente pelo WhatsApp.' },
-  { ref:'RA-03', label:'Saque e vitrine',
+  { ref:'RA-03', label:'Saque e vitrine', kind:'',
     titulo:'Não consigo sacar e não me aceitam na vitrine',
     msg:'Boa noite, infelizmente não estou conseguindo realizar o saque e também vi que não estão me aceitando na vitrine de afiliados. Gostaria de uma resolução desse problema.' },
-  { ref:'RA-04', label:'Ajuda com link 2YOU',
+  { ref:'RA-04', label:'Ajuda com link 2YOU', kind:'is-faq',
     titulo:'Ajuda com o link',
     msg:'Olá! Tudo bem? Comecei agora nesse mundo de creator e preciso de ajuda com o link da 2YOU. Entre em contato para tirar algumas dúvidas, como adicionar redes sociais, links personalizados, etc. Não tive retorno até o momento.' },
-  { ref:'RA-05', label:'Sem e-mail, ameaça contestar',
+  { ref:'RA-05', label:'Ameaça contestar no banco', kind:'is-p1',
     titulo:'Não recebi e-mail de confirmação do pedido',
     msg:'Boa tarde! Fiz a compra com vocês, mas não recebi o e-mail de confirmação. O que houve? Quero saber como acompanhar meu pedido e rastrear, pois é a primeira vez que compro assim e estou muito insegura. Tentei contato no whatsapp, mas não tive retorno até o momento. Se eu não tiver retorno o mais breve possível vou contestar direto com o banco.' },
-  { ref:'LGPD', label:'Mensagem com CPF e telefone', lgpd:true,
+  { ref:'LGPD', label:'CPF, e-mail e telefone', kind:'is-lgpd',
     titulo:'Cobrança que não reconheço',
     msg:'Oi, meu nome é Carla Mendes, CPF 123.456.789-09, e-mail carla.mendes@gmail.com. Comprei um curso ontem e apareceu uma segunda cobrança no cartão que eu não reconheço. Me liga no (11) 98765-4321.' }
 ];
@@ -307,11 +744,17 @@ const RULES = [
     contexto:'A YouShop processa o pagamento, e o envio fica com o vendedor do produto. Compra, reembolso e comprovante aparecem na Área de Compras, com o e-mail usado no pedido:' }
 ];
 
+/* ---------------- Icons ---------------- */
+const ICO_EXT = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+const ICO_SHIELD = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+const ICO_LOCK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+const ICO_INFO = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+const ICO_INBOX = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>';
+
 /* ---------------- Utilidades ---------------- */
 const $ = s => document.querySelector(s);
 const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-// minúsculas e sem acento, preservando o tamanho (para alinhar os destaques)
 const norm = s => Array.from(s.toLowerCase()).map(c => c.normalize('NFD').charAt(0)).join('');
 const hhmm = () => new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
 const MASK_RE = /\[(CPF|E-MAIL|TELEFONE|NOME)\]/g;
@@ -354,14 +797,13 @@ function classify(c){
 
   const cb = hits(blanked, CHARGEBACK);
   const rule = RULES.find(r => hits(blanked, r.when).length) || null;
-  // pontuação: palavras-chave encontradas + bônus para os guias do time de destino
   const guides = KB.map(a => { const h = hits(blanked, a.kw); return {a, h, score: h.length + (rule && rule.kb.includes(a.id) ? 2 : 0)}; })
                    .filter(x => x.score > 0)
                    .sort((x, y) => y.score - x.score)
                    .slice(0, 2);
 
   const t = {
-    n: ++seq, ref: c.ref || 'livre', titulo: c.titulo || c.msg.slice(0, 64) + (c.msg.length > 64 ? '…' : ''),
+    n: ++seq, ref: c.ref || 'Livre', titulo: c.titulo || c.msg.slice(0, 64) + (c.msg.length > 64 ? '…' : ''),
     raw: c.msg, clean, masks, cb, rule, time: hhmm(),
     guides: guides.map(x => x.a),
     terms: [...new Set([...guides.flatMap(x => x.h), ...(rule ? hits(blanked, rule.when) : [])])],
@@ -402,24 +844,26 @@ function makeDraft(t){
 const chat = $('#chat');
 function bubble(kind, who, html){
   const d = document.createElement('div');
-  d.className = 'msg ' + kind;
-  d.innerHTML = '<span class="who">' + esc(who) + ' · ' + hhmm() + '</span>' + html;
+  d.className = 'bubble ' + kind;
+  d.innerHTML = '<div class="bubble-meta">' + esc(who) + ' · ' + hhmm() + '</div>' + html;
   chat.appendChild(d);
   chat.scrollTop = chat.scrollHeight;
   return d;
 }
-const guideLinks = gs => gs.map(g => '<a class="guide" href="' + g.url + '" target="_blank" rel="noopener"><strong>' + esc(g.titulo) + '</strong><span>' + esc(g.resumo) + '</span></a>').join('');
+const guideLinks = gs => gs.map(g =>
+  '<a class="guide-card" href="' + g.url + '" target="_blank" rel="noopener"><div><strong>' + esc(g.titulo) + '</strong><span>' + esc(g.resumo) + '</span></div>' + ICO_EXT + '</a>'
+).join('');
 const linkify = s => esc(s).replace(/https?:\/\/[^\s]+/g, u => '<a href="' + u + '" target="_blank" rel="noopener">' + u + '</a>');
 
 function botAnswer(t){
-  const typing = bubble('bot typing', 'Assistente de ajuda', 'digitando…');
+  const typing = bubble('bot typing', 'Assistente de ajuda', 'Analisando mensagem…');
   setTimeout(() => {
     typing.remove();
     if (t.status === 'auto'){
-      const d = bubble('bot', 'Assistente de ajuda', 'Isso está explicado na Central de Ajuda:' + guideLinks(t.guides) +
-        '<div class="actions-inline"><button class="btn-s" data-ok>Resolveu</button><button class="btn-s" data-no>Não resolveu, quero falar com alguém</button></div>');
-      d.querySelector('[data-ok]').onclick = e => { lock(d); resolveAuto(t); };
-      d.querySelector('[data-no]').onclick = e => { lock(d); escalate(t); };
+      const d = bubble('bot', 'Assistente de ajuda', 'Encontrei a resposta na Central de Ajuda:' + guideLinks(t.guides) +
+        '<div class="quick-replies"><button class="qr-btn qr-ok" data-ok>Resolveu</button><button class="qr-btn" data-no>Não resolveu, falar com alguém</button></div>');
+      d.querySelector('[data-ok]').onclick = () => { lock(d); resolveAuto(t); };
+      d.querySelector('[data-no]').onclick = () => { lock(d); escalate(t); };
     } else if (t.cb.length){
       bubble('bot', 'Assistente de ajuda', 'Sua mensagem foi marcada como prioritária e já está com uma pessoa do nosso time. A resposta chega por aqui mesmo.' +
         (t.guides.length ? '\n\nEnquanto isso, se ajudar:' + guideLinks(t.guides.slice(0, 1)) : ''));
@@ -427,26 +871,26 @@ function botAnswer(t){
       bubble('bot', 'Assistente de ajuda', 'Encaminhei para ' + esc(t.rule.team) + '. Uma pessoa do time continua a conversa por aqui.' +
         (t.guides.length ? '\n\nEnquanto isso, talvez ajude:' + guideLinks(t.guides) : ''));
     } else {
-      bubble('bot', 'Assistente de ajuda', 'Não achei esse assunto na Central de Ajuda, então passei sua mensagem para uma pessoa do time.');
+      bubble('bot', 'Assistente de ajuda', 'Não encontrei esse assunto na Central de Ajuda, então passei sua mensagem diretamente para uma pessoa do time.');
     }
-  }, 650);
+  }, 550);
 }
 function lock(d){ d.querySelectorAll('button').forEach(b => b.disabled = true); }
 
 function resolveAuto(t){
   bubble('user', 'Você', 'Resolveu, obrigado!');
   t.status = 'resolvido';
-  setTimeout(() => bubble('bot', 'Assistente de ajuda', 'Que bom! Se precisar, é só chamar.'), 400);
+  setTimeout(() => bubble('bot', 'Assistente de ajuda', 'Ótimo! Se precisar de mais alguma coisa, é só chamar.'), 350);
   render();
 }
 function escalate(t){
   bubble('user', 'Você', 'Não resolveu, quero falar com alguém.');
   t.escalated = true; t.status = 'fila'; t.prio = 2;
-  t.fila = 'Atendimento humano (cliente pediu)';
+  t.fila = 'Atendimento humano (escalado pelo cliente)';
   t.acao = 'Assumir a conversa';
   t.motivo = 'Guia enviado automaticamente, mas o cliente respondeu que não resolveu.';
   t.draft = makeDraft(t);
-  setTimeout(() => bubble('bot', 'Assistente de ajuda', 'Certo. Passei para uma pessoa do time com o resumo da sua dúvida, você não vai precisar explicar de novo.'), 400);
+  setTimeout(() => bubble('bot', 'Assistente de ajuda', 'Combinado. Passei sua conversa para uma pessoa do time já com o resumo da dúvida — você não vai precisar explicar tudo de novo.'), 350);
   selected = t.n; render();
 }
 
@@ -460,29 +904,36 @@ function submit(c){
 }
 
 /* ---------------- Console ---------------- */
-const STATUS = { fila:'Aguardando analista', auto:'Guia enviado, aguardando cliente', resolvido:'Resolvido no autoatendimento', respondido:'Respondido pelo analista', descartado:'Rascunho descartado' };
+const STATUS = {
+  fila:'Aguardando analista',
+  auto:'Guia enviado · aguardando cliente',
+  resolvido:'Resolvido no autoatendimento',
+  respondido:'Respondido pelo analista',
+  descartado:'Rascunho descartado'
+};
 const isOpen = t => t.status === 'fila' || t.status === 'auto';
 
 function renderKpis(){
   const k = [
     ['', tickets.length, 'analisados'],
-    ['red', tickets.filter(t => t.cb.length).length, 'alerta P1'],
-    ['green', tickets.filter(t => t.status === 'resolvido').length, 'resolvidos sem fila'],
-    ['', tickets.filter(t => t.status === 'fila').length, 'na fila humana']
+    ['kpi-red', tickets.filter(t => t.cb.length).length, 'alerta P1'],
+    ['kpi-green', tickets.filter(t => t.status === 'resolvido').length, 'defletidos'],
+    ['', tickets.filter(t => t.status === 'fila').length, 'fila humana']
   ];
-  $('#kpis').innerHTML = k.map(([c, v, l]) => '<div class="kpi ' + c + '"><b>' + v + '</b><span>' + l + '</span></div>').join('');
+  $('#kpis').innerHTML = k.map(([c, v, l]) => '<div class="kpi-card ' + c + '"><b>' + v + '</b><span>' + l + '</span></div>').join('');
 }
 
 function renderQueue(){
   const list = [...tickets].sort((a, b) => (isOpen(b) - isOpen(a)) || (a.prio - b.prio) || (b.n - a.n));
   $('#qinfo').textContent = tickets.length + (tickets.length === 1 ? ' ticket' : ' tickets');
   $('#queue').innerHTML = list.length ? list.map(t =>
-    '<li class="q' + (t.n === selected ? ' sel' : '') + (isOpen(t) ? '' : ' done') + '" data-n="' + t.n + '">' +
-      '<span class="p p' + t.prio + '">P' + t.prio + '</span>' +
-      '<span class="t">' + esc(t.titulo) + '</span>' +
-      '<span class="s">#' + t.n + ' · ' + esc(STATUS[t.status]) + '</span></li>').join('')
-    : '<li class="empty-q">Vazia por enquanto.</li>';
-  document.querySelectorAll('.q').forEach(li => li.onclick = () => { selected = +li.dataset.n; render(); });
+    '<li class="q-item' + (t.n === selected ? ' active' : '') + (t.prio === 1 ? ' is-p1' : '') + (isOpen(t) ? '' : ' done') + '" data-n="' + t.n + '">' +
+      '<span class="prio p' + t.prio + '">P' + t.prio + '</span>' +
+      '<span class="q-title">' + esc(t.titulo) + '</span>' +
+      '<span class="q-sub"><span>#' + t.n + '</span><span>·</span><span>' + esc(STATUS[t.status]) + '</span></span>' +
+    '</li>'
+  ).join('') : '<li class="q-empty">Nenhum ticket recebido ainda.</li>';
+  document.querySelectorAll('.q-item').forEach(li => li.onclick = () => { selected = +li.dataset.n; render(); });
 }
 
 function highlight(t){
@@ -506,40 +957,86 @@ function renderDetail(){
   box.scrollTop = 0;
   const t = tickets.find(x => x.n === selected);
   if (!t){
-    box.innerHTML = '<div class="empty"><h3>Nenhum ticket ainda</h3>Mande uma mensagem pelo canal do cliente. Sugestão de roteiro:' +
-      '<ol><li><b>RA-04</b>: dúvida simples, resolvida com o guia.</li><li><b>RA-03</b>: vai para Operações e Comercial.</li>' +
-      '<li><b>RA-05</b>: fala em contestar no banco, vira P1.</li><li><b>LGPD</b>: veja o CPF e o telefone sumirem aqui.</li></ol></div>';
+    box.innerHTML =
+      '<div class="empty-state">' +
+        '<div class="empty-icon">' + ICO_INBOX + '</div>' +
+        '<h3>Fila pronta para simulação</h3>' +
+        '<p>Envie uma mensagem pelo canal do cliente à esquerda para ver a triagem, o mascaramento LGPD e o rascunho aparecerem aqui.</p>' +
+        '<div class="tour">' +
+          '<div class="tour-step"><code>RA-04</code><span>Dúvida básica de creator — deflexão imediata com link oficial.</span></div>' +
+          '<div class="tour-step"><code>RA-03</code><span>Saque + vitrine — roteado para Operações (KYC) e Comercial.</span></div>' +
+          '<div class="tour-step"><code>RA-05</code><span>Ameaça contestar no banco — sobe para P1 anti-chargeback.</span></div>' +
+          '<div class="tour-step"><code>LGPD</code><span>CPF, e-mail, telefone e nome ocultados antes da análise.</span></div>' +
+        '</div>' +
+      '</div>';
     return;
   }
+
   const lgpd = t.masks.length
     ? 'LGPD: <b>' + t.masks.map(x => x.label + (x.n > 1 ? ' (' + x.n + 'x)' : '')).join(', ') + '</b> ocultado' + (t.masks.length > 1 ? 's' : '') + ' antes da análise.'
-    : 'LGPD: nenhum dado pessoal encontrado na mensagem.';
+    : 'LGPD: nenhum dado pessoal sensível detectado na mensagem.';
 
-  let alert = '';
-  if (t.cb.length) alert = '<div class="alert"><b>Risco de chargeback.</b> Ticket no topo da fila. O cliente recebeu só um aviso de que o caso é prioritário; a resposta depende de um analista.</div>';
-  else if (t.status === 'auto') alert = '<div class="alert info"><b>Resolvido pelo guia?</b> O cliente recebeu os links oficiais e pode responder “Resolveu” ou “Não resolveu”. Esse ticket não ocupa a fila humana.</div>';
-  else if (t.escalated) alert = '<div class="alert info"><b>Escalado pelo cliente.</b> O guia não resolveu; o resumo abaixo evita que ele precise repetir a história.</div>';
+  let callout = '';
+  if (t.cb.length){
+    callout = '<div class="callout danger">' + ICO_SHIELD + '<div><b>Escudo Anti-Chargeback ativado.</b> Ticket movido para o topo da fila (P1). O cliente recebeu apenas confirmação de prioridade; a resposta depende de um analista.</div></div>';
+  } else if (t.status === 'auto'){
+    callout = '<div class="callout info">' + ICO_INFO + '<div><b>Candidato a autoatendimento.</b> Links oficiais enviados ao cliente. Se ele confirmar que resolveu, o ticket não ocupa a fila humana.</div></div>';
+  } else if (t.escalated){
+    callout = '<div class="callout info">' + ICO_INFO + '<div><b>Escalado pelo cliente.</b> O guia não resolveu; o contexto já chegou resumido para o analista continuar sem retrabalho.</div></div>';
+  }
+
+  const statusCls = (t.status === 'resolvido' || t.status === 'respondido') ? ' ok' : (t.status === 'fila' ? ' warn' : '');
 
   let action;
   if (t.status === 'fila'){
-    action = '<h4>Rascunho para o analista</h4><textarea class="draft" id="draft">' + esc(t.draft) + '</textarea>' +
-      '<div class="draft-foot"><small>Montado só com o texto dos guias oficiais. Edite à vontade; nada vai para o cliente sem aprovação.</small>' +
-      '<div style="display:flex;gap:6px"><button class="btn ghost" id="discard">Descartar</button><button class="btn primary" id="approve">Aprovar e enviar</button></div></div>';
+    action =
+      '<div class="sec-head"><h4>Rascunho assistido</h4></div>' +
+      '<div class="draft-box">' +
+        '<div class="draft-bar"><span>Resposta sugerida com base na Central de Ajuda</span><span class="hitl-tag">Human-in-the-Loop · Revisão obrigatória</span></div>' +
+        '<textarea id="draft">' + esc(t.draft) + '</textarea>' +
+        '<div class="draft-actions">' +
+          '<small>Texto ancorado apenas nos guias oficiais. Edite livremente antes de enviar.</small>' +
+          '<div class="btn-row"><button class="btn btn-ghost" id="discard">Descartar</button><button class="btn btn-primary" id="approve">Aprovar e enviar</button></div>' +
+        '</div>' +
+      '</div>';
   } else if (t.status === 'auto' || t.status === 'resolvido'){
-    action = '<h4>Enviado automaticamente</h4><div class="status">Links para: ' + t.guides.map(g => esc(g.titulo)).join(' · ') + '</div>';
+    action =
+      '<div class="sec-head"><h4>Resposta enviada no autoatendimento</h4></div>' +
+      '<div class="status-box">Guias enviados ao cliente: <strong>' + t.guides.map(g => esc(g.titulo)).join(' · ') + '</strong></div>';
   } else {
-    action = '<h4>Resposta</h4><textarea class="draft" readonly>' + esc(t.status === 'respondido' ? t.draft : 'Rascunho descartado. O analista vai responder manualmente.') + '</textarea>';
+    action =
+      '<div class="sec-head"><h4>Registro da resposta</h4></div>' +
+      '<div class="draft-box"><textarea readonly>' + esc(t.status === 'respondido' ? t.draft : 'Rascunho descartado pelo analista. Resposta manual em andamento.') + '</textarea></div>';
   }
 
   box.innerHTML =
-    '<div class="d-meta"><span class="badge p' + t.prio + '">P' + t.prio + '</span><span>#' + t.n + '</span><span>' + esc(t.ref) + '</span><span>' + t.time + '</span><span>' + esc(STATUS[t.status]) + '</span></div>' +
-    '<div class="d-title">' + esc(t.titulo) + '</div>' + alert +
-    '<dl class="facts"><dt>Perfil</dt><dd>' + esc(t.persona) + '</dd><dt>Vai para</dt><dd>' + esc(t.fila) + '</dd>' +
-    '<dt>Próxima ação</dt><dd>' + esc(t.acao) + '</dd><dt>Por quê</dt><dd>' + esc(t.motivo) + '</dd></dl>' +
-    '<h4>Mensagem recebida</h4><div class="quote">' + highlight(t) + '</div><div class="lgpd">' + lgpd + '</div>' +
-    '<h4>Guias usados</h4>' + (t.guides.length
-      ? '<ul class="guides">' + t.guides.map(g => '<li><code>' + g.id + '</code><a href="' + g.url + '" target="_blank" rel="noopener">' + esc(g.titulo) + '</a></li>').join('') + '</ul>'
-      : '<div class="status">Nenhum guia da base cobre esse assunto.</div>') +
+    '<div class="d-top">' +
+      '<div class="d-meta"><span class="prio p' + t.prio + '">P' + t.prio + '</span><span class="mono">#' + t.n + '</span><span>·</span><span class="mono">' + esc(t.ref) + '</span><span>·</span><span>' + t.time + '</span></div>' +
+      '<span class="status-pill' + statusCls + '">' + esc(STATUS[t.status]) + '</span>' +
+    '</div>' +
+    '<h3 class="d-title">' + esc(t.titulo) + '</h3>' +
+    callout +
+    '<div class="facts-grid">' +
+      '<div class="fact"><div class="fact-k">Perfil identificado</div><div class="fact-v">' + esc(t.persona) + '</div></div>' +
+      '<div class="fact"><div class="fact-k">Fila destino</div><div class="fact-v">' + esc(t.fila) + '</div></div>' +
+      '<div class="fact"><div class="fact-k">Próxima ação</div><div class="fact-v">' + esc(t.acao) + '</div></div>' +
+      '<div class="fact"><div class="fact-k">Justificativa da triagem</div><div class="fact-v">' + esc(t.motivo) + '</div></div>' +
+    '</div>' +
+    '<div class="sec-head"><h4>Mensagem sanitizada</h4>' +
+      '<div class="legend">' +
+        '<span><i style="background:#DBEAFE"></i>LGPD</span>' +
+        '<span><i style="background:#FEE2E2"></i>Risco P1</span>' +
+        '<span><i style="background:#E6F5BE"></i>Palavra-chave</span>' +
+      '</div>' +
+    '</div>' +
+    '<div class="quote-box">' + highlight(t) + '</div>' +
+    '<div class="lgpd-bar">' + ICO_LOCK + '<span>' + lgpd + '</span></div>' +
+    '<div class="sec-head"><h4>Guias oficiais ancorados</h4></div>' +
+    (t.guides.length
+      ? '<div class="guides-list">' + t.guides.map(g =>
+          '<a class="guide-row" href="' + g.url + '" target="_blank" rel="noopener"><div class="guide-row-left"><code>' + g.id + '</code><span>' + esc(g.titulo) + '</span></div>' + ICO_EXT + '</a>'
+        ).join('') + '</div>'
+      : '<div class="status-box">Nenhum guia da base cobre este assunto — encaminhado direto para leitura humana.</div>') +
     action;
 
   const ap = $('#approve'), di = $('#discard');
@@ -553,20 +1050,34 @@ function renderDetail(){
 
 function render(){ renderKpis(); renderQueue(); renderDetail(); }
 
+function resetAll(){
+  tickets.length = 0;
+  selected = null;
+  seq = 1041;
+  chat.innerHTML = '';
+  bubble('bot', 'Assistente de ajuda', 'Oi! Me conta o que aconteceu. Se a resposta já estiver na Central de Ajuda, mando o link na hora; se não, passo direto para a equipe certa.');
+  render();
+}
+
 /* ---------------- Início ---------------- */
-$('#cases').innerHTML = CASES.map((c, i) => '<button class="case' + (c.lgpd ? ' lgpd' : '') + '" data-i="' + i + '" title="' + esc(c.titulo) + '"><code>' + c.ref + '</code>' + esc(c.label) + '</button>').join('');
-document.querySelectorAll('.case').forEach(b => b.onclick = () => submit(CASES[+b.dataset.i]));
+$('#cases').innerHTML = CASES.map((c, i) =>
+  '<button class="chip ' + c.kind + '" type="button" data-i="' + i + '" title="' + esc(c.titulo) + '"><span class="code">' + c.ref + '</span>' + esc(c.label) + '</button>'
+).join('');
+document.querySelectorAll('.chip').forEach(b => b.onclick = () => submit(CASES[+b.dataset.i]));
+
 $('#send').onsubmit = e => {
   e.preventDefault();
   const v = $('#msg').value.trim();
   if (!v) return;
   $('#msg').value = '';
+  $('#msg').style.height = 'auto';
   submit({msg:v});
 };
 $('#msg').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $('#send').requestSubmit(); } });
+$('#msg').addEventListener('input', e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 88) + 'px'; });
+$('#resetBtn').onclick = resetAll;
 
-bubble('bot', 'Assistente de ajuda', 'Oi! Me conta o que aconteceu. Se a resposta já estiver na Central de Ajuda, mando o link na hora; se não, passo para uma pessoa do time.');
-render();
+resetAll();
 </script>
 </body>
 </html>
