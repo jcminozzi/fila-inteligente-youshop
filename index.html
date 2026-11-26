@@ -104,11 +104,11 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
   position:relative;z-index:2;
 }
 .brand{display:flex;align-items:center;gap:12px}
-.logo{
-  font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:-.5px;color:#fff;
-  display:inline-flex;align-items:baseline;gap:2px;
+.logo-badge{
+  display:inline-flex;align-items:center;background:#fff;
+  padding:5px 11px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.18);
 }
-.logo .dot{width:7px;height:7px;border-radius:2px;background:var(--lime);display:inline-block;margin-left:1px}
+.logo-badge img{height:20px;width:auto;display:block}
 .brand-div{width:1px;height:18px;background:rgba(255,255,255,.16)}
 .brand-sub{font-size:13.5px;font-weight:500;color:#CBD5E1}
 .pill-live{
@@ -620,7 +620,7 @@ footer{
 <div class="top-band">
   <header class="topbar">
     <div class="brand">
-      <span class="logo">youshop<span class="dot"></span></span>
+      <span class="logo-badge"><img src="assets/youshop-logo.png" alt="YouShop"></span>
       <span class="brand-div"></span>
       <span class="brand-sub">Fila Inteligente</span>
       <span class="pill-live"><i></i>Simulador ao vivo</span>
