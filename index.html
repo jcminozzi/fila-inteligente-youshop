@@ -406,12 +406,12 @@ svg{display:inline-block;vertical-align:middle;flex-shrink:0}
 
 /* Live Pipeline Strip */
 .pipeline{
-  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;
-  margin-bottom:16px;padding:8px;border-radius:var(--r-md);
+  display:flex;flex-wrap:wrap;gap:6px;
+  margin-bottom:14px;padding:7px;border-radius:var(--r-md);
   background:var(--surface-2);border:1px solid var(--line);
 }
 .pipe-step{
-  display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:7px;
+  display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:7px;
   background:#fff;border:1px solid var(--line);
   font-size:11.5px;font-weight:600;color:var(--muted);
   opacity:.45;transform:scale(.98);transition:all .24s ease;
@@ -868,7 +868,7 @@ const INTENTS = [
   }
 ];
 
-const GREETING_ONLY = /^(?:oi+|ola+|bom dia|boa tarde|boa noite|e ai|hey|hello|alguem ai|tudo bem|td bem|preciso de ajuda|quero ajuda|me ajuda|ajuda|socorro|atendimento|suporte|falar com alguem|humano|atendente|aqui e|meu nome e|sou|cpf|email|telefone|\s|[.,!?-]|\[(?:CPF|CNPJ|E-MAIL|TELEFONE|CARTAO|NOME)\])+$/;
+const GREETING_ONLY = /^(?:oi+|ola+|bom dia|boa tarde|boa noite|e ai|hey|hello|alguem ai|tudo bem|td bem|preciso de ajuda|quero ajuda|me ajuda|ajuda|socorro|atendimento|suporte|falar com alguem|humano|atendente|aqui e|meu nome e|sou|cpf|email|telefone|\s|[.,!?-]|\[(?:cpf|cnpj|e-mail|telefone|cartao|nome)\])+$/i;
 
 /* ---------------- Icons ---------------- */
 const ICO_EXT = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
@@ -1140,7 +1140,7 @@ function submit(c){
 /* ---------------- Console ---------------- */
 const STATUS = {
   fila:'Aguardando analista',
-  auto:'Guia enviado · aguardando cliente',
+  auto:'Guia enviado',
   resolvido:'Resolvido no autoatendimento',
   respondido:'Respondido pelo analista',
   descartado:'Rascunho descartado'
